@@ -2,4 +2,4 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 #![allow(dead_code)]
-include!(concat!(env!("OUT_DIR"), "/plumber_api_binding.rs"));
+include!("../generated/plumber_api_binding.rs");
