@@ -37,7 +37,9 @@ pub fn log_write(level:i32, file:&str, line:i32, message:&str)
         let mut data = LogWriteData{ level: level, file: file, func: "????", line: line};
         let mut data_ptr = &mut data as *mut LogWriteData;
 
-        unsafe{va_helper(Some(log_write_cont), data_ptr as *mut c_void , message)};
+        let (c_message, _message) = get_cstr(Some(message));
+
+        unsafe{va_helper(Some(log_write_cont), data_ptr as *mut c_void , c_message)};
     }
 }
 
