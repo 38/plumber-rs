@@ -16,7 +16,7 @@ struct Servlet {
 impl SyncServlet for Servlet {
     fn init(&mut self, _args:&[&str]) -> ServletFuncResult 
     {
-        plumber_log!(W  "This is a test {}", _args.len());
+        plumber_log!(W  "This is a test {:?}", _args);
         return Ok(());
     }
     fn exec(&mut self) -> ServletFuncResult 
