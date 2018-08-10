@@ -74,6 +74,11 @@ unsafe fn unpack_async_task_data<'a, BT:Bootstrap>(data_ptr : *mut c_void) -> &'
     unpack(data_ptr)
 }
 
+unsafe fn dispose_async_task_data<BT:Bootstrap>(obj_ptr : *mut c_void)
+{
+    dispose::<<<BT as Bootstrap>::AsyncServletType as AsyncServlet>::AsyncTaskData>(obj_ptr);
+}
+
 pub unsafe fn call_bootstrap_obj<T:Bootstrap>(argc: u32, argv: *const *const c_char) -> *mut c_void
 {
     if let Some(args) = make_argument_list(argc, argv)
@@ -184,6 +189,8 @@ pub fn invoke_servlet_async_cleanup<BT:Bootstrap>(obj_ptr : *mut c_void, handle_
             return 0;
         }
     }
+
+    unsafe { dispose_async_task_data::<BT>(task_data_ptr) };
 
     return -1;
 }
