@@ -1,0 +1,12 @@
+[package]
+name = "example"
+version = "0.1.0"
+authors = ["Hao Hou <haohou@gmail.com>"]
+
+[lib]
+name = "servlet"
+crate-type= ["cdylib"]
+
+[dependencies]
+libc="0.2.0"
+plumber-rs = {path = ".."}
