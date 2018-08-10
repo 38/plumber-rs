@@ -9,6 +9,15 @@ pub mod servlet;
 
 pub mod rust_servlet;
 
+pub mod plumber_api;
+
+pub mod pipe;
+
+use plumber_api::runtime_api_address_table_t;
+
+#[allow(dead_code)]
+pub static mut API_ADDRESS_TABLE: Option<&'static runtime_api_address_table_t> = None;
+
 /**
  * The macro used to export all the required symbols for a servlet written in Rust
  * The basic syntax is quite simple
@@ -19,10 +28,14 @@ pub mod rust_servlet;
 macro_rules! export_bootstrap {
     ($bs:ty) => {
         use libc::{c_char, c_void};
+        use plumber_rs::plumber_api::runtime_api_address_table_t;
+        use plumber_rs::*;
+
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_bootstrap(argc: u32, argv: *const *const c_char) -> *mut c_void 
+        pub extern "C" fn _rs_invoke_bootstrap(argc: u32, argv: *const *const c_char, address_table : *const runtime_api_address_table_t) -> *mut c_void 
         {
+            unsafe{ plumber_rs::API_ADDRESS_TABLE = address_table.as_ref() };
             unsafe{ rust_servlet::call_bootstrap_obj::<$bs>(argc, argv) }
         }
 
