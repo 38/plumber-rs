@@ -5,7 +5,7 @@ use std::ptr::null;
 
 #[macro_export]
 macro_rules! plumber_api_call {
-    (let $result:ident = $name:ident ($($ap:expr),*) $what:block) => {
+    (let $result:ident = $name:ident ($($ap:expr),*) in $what:block) => {
 
         use ::API_ADDRESS_TABLE;
 
@@ -19,7 +19,7 @@ macro_rules! plumber_api_call {
         }
     };
     
-    ($name:ident ($($ap:expr),*) $what:block) => {
+    ($name:ident ($($ap:expr),*) in $what:block) => {
 
         use ::API_ADDRESS_TABLE;
 

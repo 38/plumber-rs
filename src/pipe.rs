@@ -30,7 +30,7 @@ impl Pipe {
         let (type_ptr, _type) = get_cstr(type_expr);
 
         plumber_api_call!{
-            let result = define(name_ptr, flags, type_ptr) {
+            let result = define(name_ptr, flags, type_ptr) in {
                 if result as i32 != -1
                 {
                     return Some(Pipe{pipe : result});
@@ -44,7 +44,7 @@ impl Pipe {
     pub fn eof(&mut self) -> Result<bool>
     {
         plumber_api_call!{
-            let result = eof(self.pipe) {
+            let result = eof(self.pipe) in {
                 if result as i32 != -1
                 {
                     return Ok(result > 0);
@@ -61,7 +61,7 @@ impl Read for Pipe {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize>
     {
         plumber_api_call!{
-            let result = read(self.pipe, buf.as_mut_ptr() as *mut c_void, buf.len()) {
+            let result = read(self.pipe, buf.as_mut_ptr() as *mut c_void, buf.len()) in {
                 if result as isize != -1
                 {
                     return Ok(result as usize);
@@ -77,7 +77,7 @@ impl Write for Pipe {
     fn write(&mut self, buf:&[u8]) -> Result<usize>
     {
         plumber_api_call!{
-            let result = write(self.pipe, buf.as_ptr() as *mut c_void, buf.len()) {
+            let result = write(self.pipe, buf.as_ptr() as *mut c_void, buf.len()) in {
                 if result as isize != -1
                 {
                     return Ok(result as usize);
