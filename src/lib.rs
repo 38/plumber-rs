@@ -14,14 +14,20 @@ pub mod rust_servlet;
 
 pub mod plumber_api;
 
+pub mod va_list_helper;
+
 pub mod pipe;
 
 pub mod log;
 
 use plumber_api::runtime_api_address_table_t;
+use va_list_helper::rust_va_list_wrapper_func_t;
 
 #[allow(dead_code)]
 pub static mut API_ADDRESS_TABLE: Option<&'static runtime_api_address_table_t> = None;
+
+#[allow(dead_code)]
+pub static mut VA_LIST_HELPER: rust_va_list_wrapper_func_t = None;
 
 /**
  * The macro used to export all the required symbols for a servlet written in Rust
@@ -34,12 +40,17 @@ macro_rules! export_bootstrap {
     ($bs:ty) => {
         use libc::{c_char, c_void};
         use plumber_rs::plumber_api::runtime_api_address_table_t;
+        use plumber_rs::va_list_helper::rust_va_list_wrapper_func_t;
         use plumber_rs::*;
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_bootstrap(argc: u32, argv: *const *const c_char, address_table : *const runtime_api_address_table_t) -> *mut c_void 
+        pub extern "C" fn _rs_invoke_bootstrap(argc: u32, 
+                                               argv: *const *const c_char, 
+                                               address_table : *const runtime_api_address_table_t, 
+                                               va_helper : rust_va_list_wrapper_func_t) -> *mut c_void 
         {
+            unsafe{ plumber_rs::VA_LIST_HELPER = va_helper };
             unsafe{ plumber_rs::API_ADDRESS_TABLE = address_table.as_ref() };
             unsafe{ rust_servlet::call_bootstrap_obj::<$bs>(argc, argv) }
         }
