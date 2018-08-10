@@ -5,6 +5,9 @@
 
 extern crate libc;
 
+#[macro_use]
+mod plumber_api_call;
+
 pub mod servlet;
 
 pub mod rust_servlet;
@@ -12,6 +15,8 @@ pub mod rust_servlet;
 pub mod plumber_api;
 
 pub mod pipe;
+
+pub mod log;
 
 use plumber_api::runtime_api_address_table_t;
 
