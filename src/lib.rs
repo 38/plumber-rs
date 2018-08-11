@@ -24,6 +24,8 @@ pub mod pipe;
 
 pub mod log;
 
+pub mod protocol;
+
 use plumber_api::runtime_api_address_table_t;
 use va_list_helper::rust_va_list_wrapper_func_t;
 
