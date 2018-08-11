@@ -24,7 +24,7 @@ fn search_for_pstd_lib() -> Option<String>
 
         if Path::new(&lib_path).exists() 
         {
-            return Some(path);
+            return Some(path + "/lib/");
         }
     }
 
