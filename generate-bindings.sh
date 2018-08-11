@@ -20,3 +20,4 @@ bindgen() {
 
 bindgen plumber_api.h -I ${PLUMBER_PREFIX}/include/pservlet
 bindgen va_list_helper.h
+bindgen pstd.h -I ${PLUMBER_PREFIX}/include/pstd -I ${PLUMBER_PREFIX}/include/pservlet

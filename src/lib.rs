@@ -10,6 +10,8 @@ extern crate libc;
 #[macro_use]
 mod plumber_api_call;
 
+pub mod pstd;
+
 pub mod servlet;
 
 pub mod rust_servlet;
@@ -25,6 +27,9 @@ pub mod log;
 use plumber_api::runtime_api_address_table_t;
 use va_list_helper::rust_va_list_wrapper_func_t;
 
+#[allow(dead_code)]
+#[no_mangle]
+#[export_name="__plumber_address_table"]
 #[allow(dead_code)]
 pub static mut API_ADDRESS_TABLE: Option<&'static runtime_api_address_table_t> = None;
 

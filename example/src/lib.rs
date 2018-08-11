@@ -19,6 +19,8 @@ impl SyncServlet for Servlet {
     fn init(&mut self, _args:&[&str]) -> ServletFuncResult 
     {
         plumber_log!(W  "This is a test {:?}", _args);
+        //use plumber_rs::pstd::pstd_type_model_new;
+        //plumber_log!(W  "Type model {:?}", unsafe{pstd_type_model_new()});
         return Ok(());
     }
     fn exec(&mut self) -> ServletFuncResult 
