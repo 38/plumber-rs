@@ -1,0 +1,10 @@
+insmod("pssm");
+insmod("mem_pipe");
+insmod("tcp_pipe 12345");
+
+import("service");
+
+Service.start({
+	node := "language/rust target/debug/libservlet.so";
+	() -> "input" node "output" -> ();
+});

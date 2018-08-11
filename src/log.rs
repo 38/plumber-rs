@@ -5,7 +5,9 @@ use ::va_list_helper::{__va_list_tag};
 use ::VA_LIST_HELPER;
 
 use std::os::raw::c_void;
-
+/**
+ * @brief The helper data for the log function
+ **/
 struct LogWriteData<'a> {
     level:i32,
     file:&'a str,
@@ -13,10 +15,18 @@ struct LogWriteData<'a> {
     line:i32
 }
 
+/**
+ * @brief Write the log to Plumber logging system
+ * @param level The level id
+ * @param file  The source file name
+ * @param line  The line number
+ * @param message The message
+ * @return noghint
+ **/
 pub fn log_write(level:i32, file:&str, line:i32, message:&str) 
 {
 
-    if let Some(va_helper) = unsafe{VA_LIST_HELPER} 
+    if let Some(ref va_helper) = unsafe{VA_LIST_HELPER} 
     {
         extern "C" fn log_write_cont(ap:*mut __va_list_tag, data:*mut c_void)
         {
@@ -43,14 +53,23 @@ pub fn log_write(level:i32, file:&str, line:i32, message:&str)
     }
 }
 
+/**
+ * @brief Write the log with specific level
+ * @param level The log level
+ **/
 #[macro_export]
 macro_rules! plumber_log_write {
-    ($level:expr,  $($arg:tt)*) => {
+    ($level:expr,  $($arg:tt)*) => {{
         use plumber_rs::log::log_write;
         log_write($level, file!(), line!() as i32, &(format!($($arg)*))[0..]);
-    }
+    }}
 }
 
+/**
+ * Write a log to Plumber logging system. For example
+ *     plumber_log!(N "test"); 
+ * This will write the string to the Plumber logging system
+ **/
 #[macro_export]
 macro_rules! plumber_log {
     (F $($arg:tt)*) => { plumber_log_write!(0, $($arg)*); };

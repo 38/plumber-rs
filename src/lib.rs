@@ -1,5 +1,7 @@
 // Copyright (C) 2018, Hao Hou
 
+// Copyright (C) 2018, Hao Hou
+
 #![feature(box_leak)]
 #![feature(associated_type_defaults)]
 
