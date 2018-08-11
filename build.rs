@@ -18,7 +18,9 @@ fn search_for_pstd_lib() -> Option<String>
 
     for path in candicates 
     {
-        let lib_path = path.clone() + "lib/libpstd.so";
+        let lib_path = path.clone() + "/lib/libpstd.so";
+
+        eprintln!("Looking for path {}", lib_path);
 
         if Path::new(&lib_path).exists() 
         {
