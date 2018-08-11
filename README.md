@@ -69,7 +69,7 @@ impl Bootstrap for BootstrapType {
 export_bootstrap!(BootstrapType);
 ```
 
-**Step 4** Build the servlet
+**Step 5** Build the servlet
 
 To build the servlet you should export two environment variable `PSTD_LIB_PATH` which is the path for libpstd.
 
