@@ -4670,6 +4670,20 @@ pub type pstd_type_assertion_t = ::std::option::Option<
         data: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
+/// @brief The callback function for type check has been completed done.
+/// This function is called when the analysis on current pipe is completed done.
+/// @detail This is useful when we want to validate the type shape of a field, because we cannot use type assertion,
+/// since we call the type assertion before all the accessor has been resolved.
+/// In addition the type assertion is served as the assertion on pipe. So it's a bad idea that we check the
+/// field information in the function.
+/// That is why we need such a callback.
+/// Unlike the type assertion, this callback is actually called after everything for this pipe is done.
+/// And the accessor layout is not allowed to change.
+/// @param data The additional data we want to pass to this function
+/// @return status code (if this function returns an error, type check would fail)
+pub type pstd_type_checked_callback_t = ::std::option::Option<
+    unsafe extern "C" fn(pipe: pipe_t, data: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int,
+>;
 extern "C" {
     /// @brief Create a new pipe type model object
     /// @return the newly create pipe, NULL on error  case
@@ -4730,6 +4744,21 @@ extern "C" {
         model: *mut pstd_type_model_t,
         pipe: pipe_t,
         assertion: pstd_type_assertion_t,
+        data: *mut ::std::os::raw::c_void,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    /// @brief Add a new type checked callback, which will called when the everything has been done for this pipe
+    /// @details See the details in pstd_type_checked_callback_t
+    /// @param model    The type model
+    /// @param pipe     The target pipe descriptor
+    /// @param callback The callback function
+    /// @param data     The additional data we want to pass
+    /// @return status code
+    pub fn pstd_type_model_on_pipe_type_checked(
+        model: *mut pstd_type_model_t,
+        pipe: pipe_t,
+        callback: pstd_type_checked_callback_t,
         data: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int;
 }

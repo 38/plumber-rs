@@ -17,6 +17,11 @@ use std::io::BufReader;
  **/
 pub type PipeFlags = runtime_api_pipe_flags_t;
 
+/**
+ * The integer type used to represent a reference to the Pipe port
+ **/
+pub type PipeDescriptor = runtime_api_pipe_t;
+
 // TODO: Currently because of the limit of rust-bindgen, all the constant marcos with non-primitive
 //       type is missing in the bind file. So we have do define it manually
 
@@ -112,6 +117,7 @@ pub struct Pipe<ST> {
     _st  : ::std::marker::PhantomData<ST>
 }
 
+
 /**
  * A reference to a given pipe port.
  *
@@ -155,6 +161,16 @@ impl <ST> Pipe<ST> {
         return BufReader::new(PipeRef {
             pipe : self.pipe
         });
+    }
+
+    /**
+     * Get the actual pipe descriptor managed by this pipe object
+     *
+     * Return the pipe descriptor
+     **/
+    pub fn as_descriptor(&self) -> PipeDescriptor 
+    {
+        return self.pipe.clone();
     }
 
     /**
