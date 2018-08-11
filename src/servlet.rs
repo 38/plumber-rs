@@ -1,88 +1,189 @@
 //Copyright (C) 2018, Hao Hou
 
+//! The module that defines the servlet traits.
+//!
+//! This is the fundamental module for the Plumber-Rust binding library. This module defines the
+//! basic traits and types for a plumber servlet.
+//!
+//! To create a Plumber servlet with rust, `Bootstrap` trait must be implemented by some type and
+//! this type should be used in `export_bootstrap!` macro.
+
 /**
- * The default servlet function result
+ * The servlet function call result
  **/
 pub type ServletFuncResult = Result<(), ()>;
 
 /**
- * The dummy struct used as the type tag for a async task handle
+ * Returns the success result
+ **/
+pub fn success() -> ServletFuncResult { return Ok(()); }
+
+/**
+ * Returns the failure result
+ **/
+pub fn fail() -> ServletFuncResult { return Err(()); }
+
+/**
+ * The type for the async task handle
+ *
+ * An async task handle is the handle issued by the Plumber framework as an identifier for each
+ * async task. Some async task control operation can be done with this handle
+ *
+ * **TODO**: We need to make implement the language-binding for async task control APIs
  **/
 pub struct AsyncTaskHandle {}
 
 /**
- * The dummy servlet that is used as a placeholder for the unimplemented types
+ * The placeholder for a servlet that is not implemented
+ *
+ * To implement bootstrap trait, a type needs to give both `AsyncServletType` and `SyncServletType`
+ * However, not all servlet supports the both mode. This placeholder can be used when the servlet
+ * doesn't support the mode.
  **/
 pub struct Unimplemented {} 
 
 /**
- * The trait for a synchronous servlet, which occupies the worker thread during execution
+ * The trait for a synchronous servlet.
+ *
+ * A sync servlet is a servlet occupies the worker thread during execution. This is the most common
+ * form of servlet. However, when there are some blocking operations needs to be done by the
+ * servlet, this model is really ineffecient because it blocks the worker thread completely and
+ * reduces the system throughput. 
  **/
 pub trait SyncServlet {
     /**
-     * The initialization function
-     * @param args The arguments has been passed to the servlete
-     * @return The result
+     * The initialization function. 
+     *
+     * This should be called by the Plumber framework before the
+     * application gets started. All the pipe declaration should be done in this function.
+     *
+     * * `args`: The servlet init argument list
+     *
+     * Return the result of the servlet
      **/
     fn init(&mut self, args:&[&str]) -> ServletFuncResult;
+
     /**
-     * Execute the servlet 
-     * @return The function call result
+     * The sync execute function.
+     *
+     * This should be called by Plumber framework when the framework decide to activate the servlet
+     * due to some input event. This function will be called from any worker thread.
+     *
+     * Return The servlet function result.
      **/
     fn exec(&mut self) -> ServletFuncResult;
+
     /**
-     * Cleanup the servlet context
-     * @return The function call result
+     * The cleanup function
+     *
+     * This should be called by Plumber framework when the Plumber application gets either killed
+     * or upgraded (and new version of the binary is loaded). 
+     *
+     * Return the servlet function result.
      **/
     fn cleanup(&mut self) -> ServletFuncResult;
 }
 
 /**
- * The trait for an asynchronous servlet, which doesn't occupies the worker thread to run
+ * The trait for an asynchronous servlet.
+ *
+ * An async servlet is a servlet that uses an async thread to run. It's also possible the async
+ * servlet uses some event driven model such as ASIO. This model is useful when the servlet isn't
+ * CPU bound and this will makes the task yield the worker thread to other event. 
  **/
 pub trait AsyncServlet {
     /**
-     * The local data buffer used by the async buffer. 
+     * The private data buffer used by the async buffer. 
+     *
+     * A private data buffer for this async task is the data object that contains all the
+     * information `async_exec` would use and doesn't share to anyone else. 
+     *
+     * So this per task isolation eliminates the race condition of an async task.
+     *
      * See the async servlet programming model documentation for details
      **/
     type AsyncTaskData : Sized;
+
     /**
-     * The initialization function
-     * @param args The arguments has bee passed to servlet
-     * @return The result
+     * The initialization function. 
+     *
+     * This should be called by the Plumber framework before the
+     * application gets started. All the pipe declaration should be done in this function.
+     *
+     * * `args`: The servlet init argument list
+     *
+     * Return the result of the servlet
      **/
     fn init(&mut self, args:&[&str]) -> ServletFuncResult;
     /**
-     * Initialize an async task
-     * @param handle  The async handle for this task
-     * @return The newly allocated box for the task private data
+     * Initialize the async task.
+     *
+     * This function will be called by the Plumber framework from any worker thread. The servlet
+     * should allocate the private data object which would be used for this task only.
+     *
+     * * `handle` The async handle for this task
+     *
+     * Return The newly created async task private data, None indicates failure
      **/
     fn async_init(&mut self, handle:&AsyncTaskHandle) -> Option<Box<Self::AsyncTaskData>>;
+
     /**
-     * Execute an async task
-     * @note This function will be invoked by the async worker thread rather than normal worker
-     * thread
-     * @param handle The task handle
-     * @param task_data The task private data
-     * @return The function invocation result
+     * Run the execution task. 
+     *
+     * This function will be called by Plumber framework from any async processing thread. 
+     * In this function, all the Plumber API beside the async handle related ones are disabled and
+     * will return an error when it gets called. 
+     *
+     * This is desgined for the slow operation such as network IO, database query, etc.
+     *
+     * The task result should be put into task private data, so that the async_cleanup function can
+     * consume it.
+     *
+     * * `handle`: The async task handle
+     * * `task_data`: The private task data
+     * 
+     * Returns the servlet function invocation result
      **/
     fn async_exec(handle:&AsyncTaskHandle, task_data:&mut Self::AsyncTaskData) -> ServletFuncResult;
+
     /**
-     * Finalize the async task
-     * @param handle The task handle
-     * @param task_data The task private data
-     * @return The function result
+     * The finalization step of an async task.
+     *
+     * In this step, the async task execution result should have been propageated by the
+     * `async_exec` thread already. And this function is responsible to write the slow operation
+     * result to the pipe as well as some task cleanup.
+     *
+     * This function will be called by Plumber framework from the same worker thread as
+     * `async_init`. So all the Plumber API can be used in the execution stage can be used at this
+     * point.
+     *
+     * * `handle`: The async task handle
+     * * `task_data`: The async task private data
+     *
+     * Return the servlet function invocation result
      **/
     fn async_cleanup(&mut self, handle:&AsyncTaskHandle, task_data:&mut Self::AsyncTaskData) -> ServletFuncResult;
+    
     /**
-     * Cleanup the servlet object
-     * @return The result
+     * The cleanup function
+     *
+     * This should be called by Plumber framework when the Plumber application gets either killed
+     * or upgraded (and new version of the binary is loaded). 
+     *
+     * Return the servlet function result.
      **/
     fn cleanup(&mut self) -> ServletFuncResult;
 }
 
 /**
- * The enum used to represent the either a sync servlet or an asnyc servlet
+ * The value that is used as the bootstrap result
+ *
+ * Eventhough some servlet can support both sync and async mode. But when the servlet gets
+ * instiantated, it's required to select one of the model as the model of servlet instance. 
+ *
+ * With this enum, it can return either a Sync model or an async model.
+ *
+ * See documentation for trait function `Bootstrap::get` for detailed use cases.
  **/
 pub enum ServletMode<AsyncType: AsyncServlet, SyncType: SyncServlet> {
     /// The servlet is using sync ABI
@@ -92,24 +193,41 @@ pub enum ServletMode<AsyncType: AsyncServlet, SyncType: SyncServlet> {
 }
 
 /**
- * The trait for the bootstrap type, which is used to set up the entire servleet
+ * The trait for the bootstrap type
+ *
+ * The bootstrap type of a servlet is the type that carries all the required information about the
+ * servlet. To export the servlet and make it usable by Plumber-Rust servlet  loader, the bootstrap
+ * object needs to be exported with macro `export_bootstrap!(bootstrap_impl)`. Where
+ * `bootstrap_impl` is the implememntation of this trait.
  **/
 pub trait Bootstrap {
     /**
-     * The async servlet type, if the servlet doesn't support async ABI, put Unimplemented as place
-     * holder
+     * The type for servlet implememntation of the async servlet model.
+     *
+     * `Unimplemented` placeholder can be used if the servlet doesn't support async model
      **/
     type AsyncServletType : AsyncServlet;
+
     /**
-     * The sync servlet type, if the servlet doesn't support async ABI, put Unimplemented as place
-     * holder
+     * The type for servlet implememntation of the sync servlet model
+     *
+     * `Unimplemented` placeholder can be used if the servlet doesn't support sync model
      **/
     type SyncServletType : SyncServlet;
 
     /**
-     * Get the actual servlet runtime data
-     * @param args The servlet initalization arguments
-     * @return The servlet mode
+     * Call the bootstrap object and get the actual servlet object for this servlet instance. 
+     *
+     * This is called when the Rust servlet loader is loading the rust written servlet. This
+     * function will returns all the required information for the loader to build up the runtime
+     * environment of the rust servlet.
+     *
+     * In this function, the bootstrap object needs to choose one servlet model as the servlet
+     * model for current instance by returning ther `SyncMode(...)` or `AsyncMode(...)`
+     *
+     * * `args`: The servlet initialization arguments. It's useful to determine the servlet model.
+     *
+     * Returns The bootstrap result, or error
      **/
     fn get(args:&[&str]) -> Result<ServletMode<Self::AsyncServletType, Self::SyncServletType>, ()>;
 }

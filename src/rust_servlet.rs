@@ -1,10 +1,12 @@
 // Copyright (C) 2018, Hao Hou
-
+//
+//!The hepler function used by the Rust servlet. 
+//!
+//!All the function defines in this file should only be used by calling `export_bootstrap` macro. 
 use libc::{c_char, c_void};
 use std::ffi::CStr;
 use std::ptr::null;
 use ::servlet::{Unimplemented, AsyncServlet, SyncServlet, ServletMode, ServletFuncResult, Bootstrap, AsyncTaskHandle};
-
 
 impl SyncServlet for Unimplemented {
     fn init(&mut self, _args:&[&str]) -> ServletFuncResult {Err(())}
@@ -21,7 +23,7 @@ impl AsyncServlet for Unimplemented {
     fn cleanup(&mut self) -> ServletFuncResult{Err(())}
 }
 
-pub unsafe fn make_argument_list<'a>(argc: u32, argv: *const *const c_char) -> Option<Vec<&'a str>>
+unsafe fn make_argument_list<'a>(argc: u32, argv: *const *const c_char) -> Option<Vec<&'a str>>
 {
     let mut args = Vec::new();
 
@@ -79,6 +81,23 @@ unsafe fn dispose_async_task_data<BT:Bootstrap>(obj_ptr : *mut c_void)
     dispose::<<<BT as Bootstrap>::AsyncServletType as AsyncServlet>::AsyncTaskData>(obj_ptr);
 }
 
+/**
+ * Call the bootstrap object for the given servlet. 
+ * A bootstrap object is a rust object that carries all the information that is needed by the
+ * Plumber Rust servlet loader to complete the initialization step
+ *
+ * This is a template rather than a concrete function, some of the code generation step is used
+ * when we actually export the bootstrap object to the Plumber framework. So there's no runtime
+ * cost since there are no traits object actually used.
+ *
+ * DO NOT use this function directly. The correct way to use this function is by calling the macro 
+ * `export_bootstrap` in the crate that is a servlet
+ *
+ * * `argc`: The number of servlet initailization arguments
+ * * `argv`: The list of servlet initialization arguments
+ *
+ * Returns a raw pointer to the actual servlet object
+ **/
 pub unsafe fn call_bootstrap_obj<T:Bootstrap>(argc: u32, argv: *const *const c_char) -> *mut c_void
 {
     if let Some(args) = make_argument_list(argc, argv)
@@ -98,7 +117,19 @@ pub unsafe fn call_bootstrap_obj<T:Bootstrap>(argc: u32, argv: *const *const c_c
 
 }
 
-
+/**
+ * The helper function to invoke the servlet's initialization function. This is called by the
+ * Plumber framework when before the application gets started
+ *
+ * This function is designed to be exported by the `export_bootstrap`. Please be aware that 
+ * direcly calling this function seems weird.
+ *
+ * * `obj_ptr`: The servlet object pointer the framework acquired with bootstrap type
+ * * `argc`: The number of servlet init arguments
+ * * `argv`: The array of servlet init arguments
+ *
+ * Returns the servlet initialization result follows the Plumber convention
+ **/
 pub fn invoke_servlet_init<BT:Bootstrap>(obj_ptr : *mut c_void, argc: u32, argv: *const *const c_char) -> i32 
 {
     if let Some(args) = unsafe{ make_argument_list(argc, argv) }
@@ -122,6 +153,18 @@ pub fn invoke_servlet_init<BT:Bootstrap>(obj_ptr : *mut c_void, argc: u32, argv:
     return -1;
 }
 
+/**
+ * The helper function to invoke a synchronous servlet's exec callback. This function is called by
+ * the Plumber framework from any of the worker thread when the framework decide to activate the
+ * servlet. 
+ *
+ * This function is designed to be exported by the `export_bootstrap`. Please be aware that 
+ * direcly calling this function seems weird.
+ *
+ * * `obj_ptr`: The servlet object pointer the framework acquired with bootstrap type
+ *
+ * Returns the execution result follows the Plumber convention
+ **/
 pub fn invoke_servlet_sync_exec<BT:Bootstrap>(obj_ptr : *mut c_void) -> i32
 {
     if let ServletMode::SyncMode(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) } 
@@ -134,6 +177,17 @@ pub fn invoke_servlet_sync_exec<BT:Bootstrap>(obj_ptr : *mut c_void) -> i32
     return -1;
 }
 
+/**
+ * The helper to invoke the cleanup function. This function is called by the Plumber framework when
+ * the Plumber application is terminated and the servlet should be finalized. 
+ *
+ * This function is designed to be exported by the `export_bootstrap`. Please be aware that 
+ * direcly calling this function seems weird.
+ *
+ * * `obj_ptr`: The servlet object pointer the framework acquired with bootstrap type
+ *
+ * Returns the cleanup result follows the Plumber convention
+ **/
 pub fn invoke_servlet_cleanup<BT:Bootstrap>(obj_ptr : *mut c_void) -> i32
 {
     let mut ret = -1;
@@ -150,6 +204,21 @@ pub fn invoke_servlet_cleanup<BT:Bootstrap>(obj_ptr : *mut c_void) -> i32
     return ret;
 }
 
+/**
+ *
+ * The helper function to invoke the task initialization step of an asynchronous servlet. This
+ * function should be used by the Plumber framework when an asynchronous servlet needs to be
+ * activated. This function should be called from any of the worker thread, it's responsible for
+ * create a private task data which can be used by the servlet later.
+ *
+ * This function is designed to be exported by the `export_bootstrap`. Please be aware that 
+ * direcly calling this function seems weird.
+ *
+ * * `obj_ptr`: The servlet object pointer the framework acquired with bootstrap type
+ * * `handle_ptr`: The async task handle provided by the Plumber framework
+ *
+ * Returns the ownership of Rust Box object that carries the data private data object
+ **/
 pub fn invoke_servlet_async_init<BT:Bootstrap>(obj_ptr : *mut c_void, handle_ptr : *mut c_void) -> *mut c_void
 {
     if let ServletMode::AsyncMode(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) }
@@ -165,6 +234,20 @@ pub fn invoke_servlet_async_init<BT:Bootstrap>(obj_ptr : *mut c_void, handle_ptr
     return null::<c_void>() as *mut c_void;
 }
 
+/**
+ * The helper to invoke the async task execution step of an async servlet. This function should be
+ * used by Plumber framework when the async task is ready to run. This function should be called
+ * from any async processing thread owned by Plumber framework. 
+ *
+ * This function is designed to be exported by the `export_bootstrap`. Please be aware that 
+ * direcly calling this function seems weird.
+ *
+ * * `obj_ptr`: The servlet object pointer the framework acquired with bootstrap type
+ * * `handle_ptr`: The async task handle provided by the Plumber framework
+ * * `task_data_ptr`: The pointer to the task private data
+ *
+ * Return status code in Plumber fashion
+ **/
 pub fn invoke_servlet_async_exec<BT:Bootstrap>(handle_ptr : *mut c_void, task_data_ptr : *mut c_void) -> i32
 {
     let handle = unsafe { unpack_async_handle(handle_ptr) };
@@ -177,6 +260,20 @@ pub fn invoke_servlet_async_exec<BT:Bootstrap>(handle_ptr : *mut c_void, task_da
     return -1;
 }
 
+/**
+ * The helper to invoke the async task's cleanup step. This function should be used by Plumber
+ * framework when the async task has completed. This function should be called from the same worker
+ * thread as the async task init step. 
+ *
+ * This function is designed to be exported by the `export_bootstrap`. Please be aware that 
+ * direcly calling this function seems weird.
+ *
+ * * `obj_ptr`: The servlet object pointer the framework acquired with bootstrap type
+ * * `handle_ptr`: The async task handle provided by the Plumber framework
+ * * `task_data_ptr`: The pointer to the task private data
+ *
+ * Return status code in Plumber fashion
+ **/
 pub fn invoke_servlet_async_cleanup<BT:Bootstrap>(obj_ptr : *mut c_void, handle_ptr: *mut c_void, task_data_ptr : *mut c_void) -> i32
 {
     if let ServletMode::AsyncMode(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) }

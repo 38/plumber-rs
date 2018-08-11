@@ -1,12 +1,26 @@
 // Copyright (C) 2018, Hao Hou
 
+//! The binding for the Plumber framework logging system.
+//!
+//! With the plumber_log macro, the Rust servlet is able to emit log to the Plumber logging system
+//! directly.
+//!
+//! Sample code:
+//! ```rust
+//!     plumber_log(E "This is a error message");
+//!     plumber_log(N "This is a notice message");
+//!     plumber_log(D "Debug message {}", "hello");
+//!     //...
+//! ```
+
 use ::plumber_api_call::get_cstr;
 use ::va_list_helper::{__va_list_tag};
 use ::VA_LIST_HELPER;
 
 use std::os::raw::c_void;
+
 /**
- * @brief The helper data for the log function
+ * The helper data for the log function
  **/
 struct LogWriteData<'a> {
     level:i32,
@@ -16,12 +30,15 @@ struct LogWriteData<'a> {
 }
 
 /**
- * @brief Write the log to Plumber logging system
- * @param level The level id
- * @param file  The source file name
- * @param line  The line number
- * @param message The message
- * @return noghint
+ * Write a log to the Plumber logging system.
+ *
+ * * `level` The log level number. 0 is the highest level (fatal) and 6 is the lowest level
+ * (debug).
+ * * `file` The file name of the source code that calls this logging function
+ * * `line` The line number of the call site
+ * * `message` The log message needs to be send to Plumber logging system
+ * 
+ * *This function should be rarely used manually, the normal way to use it is macro `plumber_log!`*
  **/
 pub fn log_write(level:i32, file:&str, line:i32, message:&str) 
 {
@@ -54,8 +71,7 @@ pub fn log_write(level:i32, file:&str, line:i32, message:&str)
 }
 
 /**
- * @brief Write the log with specific level
- * @param level The log level
+ * Write the log with specified level to Plumber logging system
  **/
 #[macro_export]
 macro_rules! plumber_log_write {
@@ -66,10 +82,28 @@ macro_rules! plumber_log_write {
 }
 
 /**
- * Write a log to Plumber logging system. For example
- *     plumber_log!(N "test"); 
- * This will write the string to the Plumber logging system
- **/
+ * Write a log message to the Plumber logging system. 
+ * See the example code in the documentation of this module for the detailed usage of the macro
+ *
+ * All the possible log messages:
+ *
+ * * `F`: Fatal
+ * * `E`: Error
+ * * `W`: Warnning
+ * * `N`: Notice
+ * * `I`: Information
+ * * `T`: Trace
+ * * `D`: Debug
+ *
+ * Example code:
+ *
+ * ```rust
+ *     plumber_log(E "This is a error message");
+ *     plumber_log(N "This is a notice message");
+ *     plumber_log(D "Debug message {}", "hello");
+ *     //...
+ * ```
+ * **/
 #[macro_export]
 macro_rules! plumber_log {
     (F $($arg:tt)*) => { plumber_log_write!(0, $($arg)*); };

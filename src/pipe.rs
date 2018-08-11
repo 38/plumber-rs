@@ -1,5 +1,9 @@
 // Copyright (C) 2018, Hao Hou
 
+//! The Plumber Pipe IO API wrapper
+//!
+//! This module is the wrapper to the actual Plumber pipe API calls for Pipe IO
+
 use ::plumber_api::{runtime_api_pipe_t, runtime_api_pipe_flags_t};
 use ::plumber_api_call::get_cstr;
 
@@ -9,17 +13,40 @@ use std::os::raw::c_void;
 use std::io::BufReader;
 
 /**
- * The pipe flags 
+ * The integer type for the Plumber pipe flags
  **/
 pub type PipeFlags = runtime_api_pipe_flags_t;
 
 // TODO: Currently because of the limit of rust-bindgen, all the constant marcos with non-primitive
 //       type is missing in the bind file. So we have do define it manually
+
+/**
+ * Indicates the pipe port is an input side
+ **/
 pub const PIPE_INPUT    :PipeFlags   = 0;
+/**
+ * Indictes the pipe port is an output  side
+ **/
 pub const PIPE_OUTPUT   :PipeFlags   = 0x10000;
+/**
+ * If this flag is set it suggest the Plumber framework to keep the communication resource for more
+ * event even after current resource has been processed
+ **/
 pub const PIPE_PERSIST  :PipeFlags   = 0x20000;
+/**
+ * If this flag is set, it suggest Plumber framework use the async write thread if possible. This
+ * is typically useful when we want to write a large file
+ **/
 pub const PIPE_ASYNC    :PipeFlags   = 0x40000;
+/**
+ * This flag makes the output pipe a copy of input pipe. This is also called a fork, which split
+ * the dataflow into multiple ways.
+ **/
 pub const PIPE_SHADOW   :PipeFlags   = 0x80000;
+/**
+ * The pipe is diable, which is only meaningful when the pipe is a fork of another pipe. It
+ * indicates do not forward data to this fork
+ **/
 pub const PIPE_DISABLED :PipeFlags   = 0x100000;
 
 const PIPE_CNTL_GET_FLAGS:u32        = ::plumber_api::RUNTIME_API_PIPE_CNTL_OPCODE_GET_FLAGS;
@@ -69,7 +96,13 @@ macro_rules! pipe_cntl {
 }
 
 /**
- * The wrapper for a Plumber pipe
+ * The Rust wrapper of a Plumber pipe port. 
+ *
+ * In Plumber, we use a integer as identifer of the pipe
+ * port when we write the servlet. This is called `pipe_t` in the C API. However, In rust, we
+ * implemented the Pipe object which allows us directly read and write the pipe with the object.
+ *
+ * * `ST`: The type of the state. This is only used when we want to implement a stateful port
  **/
 #[allow(dead_code)]
 pub struct Pipe<ST> {
@@ -80,10 +113,15 @@ pub struct Pipe<ST> {
 }
 
 /**
- * A reference to a pipe
+ * A reference to a given pipe port.
+ *
+ * We need this type because the `std::io::bufreader` requires us to give out the ownership of the
+ * inner object to the bufreader. However a pipe port object should be used for each servlet
+ * activation, so we basically can not give it out. So we implement this reference type, so that we
+ * can give the ownership of this object to bufreader without destory the orignal pipe port object.
  **/
 pub struct PipeRef {
-    /// The pipe
+    /// The target pipe descriptor
     pipe : runtime_api_pipe_t
 }
 
@@ -106,8 +144,11 @@ impl Read for PipeRef {
 impl <ST> Pipe<ST> {
 
     /**
-     * Get a buffer reader for current pipe
-     * @return The buffer reader that can be used to read the pipe
+     * Get a `std::io::BufReader` object from current pipe port.
+     *
+     * This is useful when we want to do text IO to the pipe
+     *
+     * Returns the ownership of the newly created reader
      **/
     pub fn as_bufreader(&self) -> BufReader<PipeRef>
     {
@@ -117,13 +158,20 @@ impl <ST> Pipe<ST> {
     }
 
     /**
-     * Define a new pipe port for the servlet
-     * @param name The name of the port
-     * @param flags The pipe flags
-     * @param type_expr An optional type expression, NULL if the pipe is untyped
-     * @return The newly created pipe or None
+     * Define a new pipe port for the current servlet.
+     *
+     * This function creates the pipe port in Rust as well as Plumber framework. Since Plumber only
+     * allows pipe port declaration during the initialization stage, so if this function is called
+     * from execution or cleanup stage, the result will be a failure.
+     *
+     * * `name` The name of the port. It will be used for the dataflow graph construction
+     * * `flags` The initial pipe flag of this pipe. 
+     * * `type_expr` The type expression for the protocol of this pipe port. See Plumber's protocol
+     * typing documentations for detail.
+     *
+     * Returns either `None` on creating failure or `Some` of ownership of the newly created pipe
+     * object
      **/
-    #[allow(dead_code)]
     pub fn define(name:&str, flags: PipeFlags, type_expr:Option<&str>) -> Option<Pipe<ST>>
     {
         let (name_ptr, _name) = get_cstr(Some(name));
@@ -142,8 +190,23 @@ impl <ST> Pipe<ST> {
     }
 
     /**
-     * Check if the pipe has reached EOF
-     * @return The result or None on error
+     * Check if the pipe contains no more data. 
+     *
+     * This is meaningful only when we are currently executing some execution task with this servlet. 
+     * Which means it only can be called from either `exec` and `async_init`, `async_cleanup` stage
+     * of a servlet. Otherwise it will returns a failure.
+     *
+     * The EOF function in Plumber defines a little bit different from normal EOF. It indicates if
+     * it's possible to have further data.
+     *
+     * If this function returns `true`, it's possible we have more data in the furture, but it's **not** 
+     * means we current have data to read. It's also possible that there's no more data but the
+     * framework is not able to realize that currently. 
+     *
+     * If this function returns `false`, it indicates there are definitely no more data can be read
+     * from this port. 
+     *
+     * Returns either None on error case or the check result
      **/
     pub fn eof(&mut self) -> Option<bool>
     {
@@ -161,9 +224,12 @@ impl <ST> Pipe<ST> {
     }
 
     /**
-     * Get the flags of the pipe object
-     * @note This will get the flags for the pipe instance for current exec task
-     * @retrn The flags or Error
+     * Get the runtime flags of this port. 
+     *
+     * Since Plumber allows the pipe flag to be changed inside the execution stage. So this
+     * function is used to check what is the current pipe flags.
+     *
+     * Return either None on error or the current pipe flag
      **/
     pub fn flags(&mut self) -> Option<PipeFlags> 
     {
@@ -178,9 +244,9 @@ impl <ST> Pipe<ST> {
     } 
 
     /**
-     * Check if the pipe has the given flag
-     * @param flag The flags to check
-     * @return The check result or None on error 
+     * Test if the pipe port has the required pipe flags been set.
+     *
+     * Returns either None on error or the current pipe flag
      **/
     pub fn check_flag(&mut self, flag:PipeFlags) -> Option<bool>
     {
@@ -192,9 +258,11 @@ impl <ST> Pipe<ST> {
     }
 
     /**
-     * Set the pipe's flag
-     * @param flag The pipe flag
-     * @return The operation result
+     * Set the runtime flags of the pipe port 
+     *
+     * * `flag` The pipe flag we want to add to the pipe
+     *
+     * Return the operation result `None` indicates failure, `Some` Indicates success
      **/
     pub fn set_flags(&mut self, flag:PipeFlags) -> Option<()>
     {
@@ -206,9 +274,11 @@ impl <ST> Pipe<ST> {
     }
 
     /**
-     * Clear the pipe's flag
-     * @param flag The pipe flag
-     * @return The operation result
+     * Unset the runtime flags for a pipe port
+     *
+     * * `flag` The pipe flag we want to unset
+     *
+     * Return the operation result `None` indicates failure, `Some` for success
      **/
     pub fn clear_flags(&mut self, flag:PipeFlags) -> Option<()>
     {
@@ -226,8 +296,21 @@ impl <ST> Pipe<ST> {
     }
 
     /**
-     * Get the associated state for current pipe resource
-     * @return The state or None if there's no state
+     * Get the associated state for current pipe resource.
+     *
+     * Plumber allows stateful pipe port, which means in the execution state, the servlet can
+     * attach a state object with the pipe resource. After the state is attached, and
+     * `PIPE_PERSIST` flag is set, the framework will manage the state for the servlet. 
+     *
+     * When the servlet is active again due to the same communication resource, the object can be
+     * retrieved.
+     *
+     * Returns the retrieved reference to the Obect.
+     *
+     * Note: Plumber framework always manage the ownership of the pushed state objects. So in this
+     * function only a reference will be returned. All the memory management is done by Plumber
+     * rather than Rust.
+     *
      **/
     pub fn get_state<'a>(&mut self) -> Option<&'a ST>
     {
@@ -246,10 +329,17 @@ impl <ST> Pipe<ST> {
     }
 
     /**
-     * Push a new state to current pipe resource. This will transfer the owership to Plumber
-     * framework.
-     * @param obj The box that contains the object
-     * @return An option value indicates if the status success
+     * Push the state object to the pipe. This will attach the state to the pipe communication
+     * resources. 
+     *
+     * See the documentation of `get_state` for more detailed description of state mechanism.
+     *
+     * * `obj`: The box that contains the ownership of the state we want to push
+     *
+     * Return The operation result.
+     *
+     * Note: This function always takes the ownership of the state object, even if it returns a
+     * failure. 
      **/
     pub fn push_state(&mut self, obj : Box<ST>) -> Option<()>
     {

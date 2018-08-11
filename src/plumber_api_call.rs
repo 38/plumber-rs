@@ -3,7 +3,6 @@ use std::ffi::{CString};
 use libc::c_char;
 use std::ptr::null;
 
-#[macro_export]
 macro_rules! plumber_api_call {
     (let $result:ident = $name:ident ($($ap:expr),*) in $what:block) => {
 

@@ -1,109 +1,139 @@
 // Copyright (C) 2018, Hao Hou
-
-// Copyright (C) 2018, Hao Hou
-
 #![feature(box_leak)]
-#![feature(associated_type_defaults)]
+
+//! The Plumber-Rust servlet library. This is the basic library that can be used to create Plumber
+//! servlets/guest code with Rust. For more details about how to create the Plumber servlet with
+//! Rust, please read the [README.md](https://github.com/38/plumber-rs/blob/master/README.md) under the repository. 
+//!
+//! To learn more about the Plumber dataflow programming middleware, please visit
+//! [https://plumberserver.com](https://plumberserver.com)
+//! 
 
 extern crate libc;
 
 #[macro_use]
 mod plumber_api_call;
-
-pub mod pstd;
+mod plumber_api;
+mod pstd;
+mod va_list_helper;
 
 pub mod servlet;
-
 pub mod rust_servlet;
-
-pub mod plumber_api;
-
-pub mod va_list_helper;
-
 pub mod pipe;
-
 pub mod log;
-
 pub mod protocol;
 
-use plumber_api::runtime_api_address_table_t;
-use va_list_helper::rust_va_list_wrapper_func_t;
+/**
+ * The type for the Plumber API address table
+ **/
+pub type ApiAddressTable        = ::plumber_api::runtime_api_address_table_t;
+
+/**
+ * The function pointer for the variadic helper function
+ **/
+pub type VariadicWrapperFunc    = ::va_list_helper::rust_va_list_wrapper_func_t;
+
 
 #[allow(dead_code)]
 #[no_mangle]
 #[export_name="__plumber_address_table"]
 #[allow(dead_code)]
-pub static mut API_ADDRESS_TABLE: Option<&'static runtime_api_address_table_t> = None;
+/**
+ * The Plumber API address table. 
+ *
+ * Do not try to change it in the application code
+ **/
+pub static mut API_ADDRESS_TABLE: Option<&'static ApiAddressTable> = None;
 
 #[allow(dead_code)]
-pub static mut VA_LIST_HELPER: rust_va_list_wrapper_func_t = None;
+static mut VA_LIST_HELPER: VariadicWrapperFunc = None;
 
 /**
- * The macro used to export all the required symbols for a servlet written in Rust
- * The basic syntax is quite simple
- *  export_bootstrap!(bootstrap_type) 
- * The bootstrap_type should implmement the bootstrap trait
+ * Assign the basic address tables used by Rust servlet
+ *
+ * This function is desgined to be called from the `export_bootstrap` marco only, do not use it
+ * directly
+ *
+ * * `api_table` The Plumber framework API table
+ * * `va_helper` The variadic helper function
+ **/
+pub fn assign_address_table(api_table : *const ApiAddressTable, va_helpr: VariadicWrapperFunc) 
+{
+    unsafe {
+        API_ADDRESS_TABLE = api_table.as_ref();
+        VA_LIST_HELPER    = va_helpr;
+    }
+}
+
+/**
+ * The macro that is used to export the servlet to the shared object that can be loaded by
+ * Plumber-Rust binary loader. This macro will emit all the function that is required by the
+ * Plumber-Rust binary loader. 
+ *
+ * It calls the helper function, which translates the Plumber servlet calls into a Rust fashion.
+ * All the functions under `plumber_rs::rust_servlet` serves this purpose. So if you need to call
+ * any function under `plumber_rs::rust_servlet`, something is probably wrong. 
+ *
+ * This macro is the only correct way to use the `plumber_rs::rust_servlet` module
+ *
+ * To invoke this macro, you need a bootstrap class which carries all the information about the
+ * Rust servlet. The bootstrap servlet must implemement trait `plumber_rs::servlet::Bootstrap`
  **/
 #[macro_export]
 macro_rules! export_bootstrap {
     ($bs:ty) => {
-        use libc::{c_char, c_void};
-        use plumber_rs::plumber_api::runtime_api_address_table_t;
-        use plumber_rs::va_list_helper::rust_va_list_wrapper_func_t;
-        use plumber_rs::*;
 
         #[allow(dead_code)]
         #[no_mangle]
         pub extern "C" fn _rs_invoke_bootstrap(argc: u32, 
-                                               argv: *const *const c_char, 
-                                               address_table : *const runtime_api_address_table_t, 
-                                               va_helper : rust_va_list_wrapper_func_t) -> *mut c_void 
+                                               argv: *const *const ::libc::c_char, 
+                                               address_table : *const ::plumber_rs::ApiAddressTable, 
+                                               va_helper : ::plumber_rs::VariadicWrapperFunc) -> *mut ::libc::c_void 
         {
-            unsafe{ plumber_rs::VA_LIST_HELPER = va_helper };
-            unsafe{ plumber_rs::API_ADDRESS_TABLE = address_table.as_ref() };
-            unsafe{ rust_servlet::call_bootstrap_obj::<$bs>(argc, argv) }
+            assign_address_table(address_table, va_helper);
+            return unsafe{ ::plumber_rs::rust_servlet::call_bootstrap_obj::<$bs>(argc, argv) };
         }
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_init(obj_ptr : *mut c_void, argc: u32, argv: *const *const c_char) -> i32 
+        pub extern "C" fn _rs_invoke_init(obj_ptr : *mut ::libc::c_void, argc: u32, argv: *const *const ::libc::c_char) -> i32 
         {
-            rust_servlet::invoke_servlet_init::<$bs>(obj_ptr, argc, argv)
+            ::plumber_rs::rust_servlet::invoke_servlet_init::<$bs>(obj_ptr, argc, argv)
         }
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_exec(obj_ptr : *mut c_void) -> i32 
+        pub extern "C" fn _rs_invoke_exec(obj_ptr : *mut ::libc::c_void) -> i32 
         {
-            rust_servlet::invoke_servlet_sync_exec::<$bs>(obj_ptr)
+            ::plumber_rs::rust_servlet::invoke_servlet_sync_exec::<$bs>(obj_ptr)
         }
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_cleanup(obj_ptr : *mut c_void) -> i32 
+        pub extern "C" fn _rs_invoke_cleanup(obj_ptr : *mut ::libc::c_void) -> i32 
         {
-            rust_servlet::invoke_servlet_cleanup::<$bs>(obj_ptr)
+            ::plumber_rs::rust_servlet::invoke_servlet_cleanup::<$bs>(obj_ptr)
         }
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_async_init(obj_ptr : *mut c_void, handle : *mut c_void) -> *mut c_void
+        pub extern "C" fn _rs_invoke_async_init(obj_ptr : *mut ::libc::c_void, handle : *mut ::libc::c_void) -> *mut ::libc::c_void
         {
-            rust_servlet::invoke_servlet_async_init::<$bs>(obj_ptr, handle)
+            ::plumber_rs::rust_servlet::invoke_servlet_async_init::<$bs>(obj_ptr, handle)
         }
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_async_exec(handle : *mut c_void, task : *mut c_void) -> i32
+        pub extern "C" fn _rs_invoke_async_exec(handle : *mut ::libc::c_void, task : *mut ::libc::c_void) -> i32
         {
-            rust_servlet::invoke_servlet_async_exec::<$bs>(handle, task)
+            ::plumber_rs::rust_servlet::invoke_servlet_async_exec::<$bs>(handle, task)
         }
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_async_cleanup(obj_ptr : *mut c_void, handle : *mut c_void, task : *mut c_void) -> i32
+        pub extern "C" fn _rs_invoke_async_cleanup(obj_ptr : *mut ::libc::c_void, handle : *mut ::libc::c_void, task : *mut ::libc::c_void) -> i32
         {
-            rust_servlet::invoke_servlet_async_cleanup::<$bs>(obj_ptr, handle, task)
+            ::plumber_rs::rust_servlet::invoke_servlet_async_cleanup::<$bs>(obj_ptr, handle, task)
         }
     }
 }

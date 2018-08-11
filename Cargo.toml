@@ -2,6 +2,12 @@
 name = "plumber-rs"
 version = "0.1.0"
 authors = ["Hao Hou <haohou302@gmail.com>"]
+description = "The basic library for Plumber servlet written in Rust"
+keywords = ["Plumber", "dataflow-programming", "language-binding"]
+license = "BSD-2-Clause"
+readme = "README.md"
+repository = "https:://github.com/38/plumber-rs"
+homepage = "https://plumberserver.com/"
 
 [dependencies]
 libc = "0.2.0"
