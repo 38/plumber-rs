@@ -73,11 +73,17 @@ macro_rules! pipe_cntl {
  **/
 #[allow(dead_code)]
 pub struct Pipe<ST> {
+    /// The actual pipe descriptor
     pipe : runtime_api_pipe_t,
+    /// The phantom data
     _st  : ::std::marker::PhantomData<ST>
 }
 
+/**
+ * A reference to a pipe
+ **/
 pub struct PipeRef {
+    /// The pipe
     pipe : runtime_api_pipe_t
 }
 
@@ -99,6 +105,10 @@ impl Read for PipeRef {
 
 impl <ST> Pipe<ST> {
 
+    /**
+     * Get a buffer reader for current pipe
+     * @return The buffer reader that can be used to read the pipe
+     **/
     pub fn as_bufreader(&self) -> BufReader<PipeRef>
     {
         return BufReader::new(PipeRef {
@@ -215,6 +225,10 @@ impl <ST> Pipe<ST> {
         return 0;
     }
 
+    /**
+     * Get the associated state for current pipe resource
+     * @return The state or None if there's no state
+     **/
     pub fn get_state<'a>(&mut self) -> Option<&'a ST>
     {
         let state_ptr = ::std::ptr::null::<ST>() as *mut ST;
@@ -231,6 +245,12 @@ impl <ST> Pipe<ST> {
         return None;
     }
 
+    /**
+     * Push a new state to current pipe resource. This will transfer the owership to Plumber
+     * framework.
+     * @param obj The box that contains the object
+     * @return An option value indicates if the status success
+     **/
     pub fn push_state(&mut self, obj : Box<ST>) -> Option<()>
     {
         let dispose_func_ptr = Self::dispose_state as *const c_void;

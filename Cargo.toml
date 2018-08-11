@@ -3,8 +3,5 @@ name = "plumber-rs"
 version = "0.1.0"
 authors = ["Hao Hou <haohou302@gmail.com>"]
 
-#[build-dependencies]
-#bindgen = "0.26.3"
-
 [dependencies]
 libc = "0.2.0"
