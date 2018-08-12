@@ -96,16 +96,20 @@ macro_rules! export_bootstrap {
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_init(obj_ptr : *mut ::libc::c_void, argc: u32, argv: *const *const ::libc::c_char) -> i32 
+        pub extern "C" fn _rs_invoke_init(obj_ptr    : *mut ::libc::c_void, 
+                                          argc       : u32, 
+                                          argv       : *const *const ::libc::c_char, 
+                                          type_model : *mut ::libc::c_void) -> i32 
         {
-            ::plumber_rs::rust_servlet::invoke_servlet_init::<$bs>(obj_ptr, argc, argv)
+            ::plumber_rs::rust_servlet::invoke_servlet_init::<$bs>(obj_ptr, argc, argv, type_model)
         }
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_exec(obj_ptr : *mut ::libc::c_void) -> i32 
+        pub extern "C" fn _rs_invoke_exec(obj_ptr   : *mut ::libc::c_void, 
+                                          type_inst : *mut ::libc::c_void) -> i32 
         {
-            ::plumber_rs::rust_servlet::invoke_servlet_sync_exec::<$bs>(obj_ptr)
+            ::plumber_rs::rust_servlet::invoke_servlet_sync_exec::<$bs>(obj_ptr, type_inst)
         }
 
         #[allow(dead_code)]
@@ -117,23 +121,29 @@ macro_rules! export_bootstrap {
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_async_init(obj_ptr : *mut ::libc::c_void, handle : *mut ::libc::c_void) -> *mut ::libc::c_void
+        pub extern "C" fn _rs_invoke_async_init(obj_ptr  : *mut ::libc::c_void, 
+                                                handle   : *mut ::libc::c_void,
+                                                type_inst: *mut ::libc::c_void) -> *mut ::libc::c_void
         {
-            ::plumber_rs::rust_servlet::invoke_servlet_async_init::<$bs>(obj_ptr, handle)
+            ::plumber_rs::rust_servlet::invoke_servlet_async_init::<$bs>(obj_ptr, handle, type_inst)
         }
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_async_exec(handle : *mut ::libc::c_void, task : *mut ::libc::c_void) -> i32
+        pub extern "C" fn _rs_invoke_async_exec(handle : *mut ::libc::c_void, 
+                                                task : *mut ::libc::c_void) -> i32
         {
             ::plumber_rs::rust_servlet::invoke_servlet_async_exec::<$bs>(handle, task)
         }
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_async_cleanup(obj_ptr : *mut ::libc::c_void, handle : *mut ::libc::c_void, task : *mut ::libc::c_void) -> i32
+        pub extern "C" fn _rs_invoke_async_cleanup(obj_ptr   : *mut ::libc::c_void, 
+                                                   handle    : *mut ::libc::c_void, 
+                                                   task      : *mut ::libc::c_void,
+                                                   type_inst : *mut ::libc::c_void) -> i32
         {
-            ::plumber_rs::rust_servlet::invoke_servlet_async_cleanup::<$bs>(obj_ptr, handle, task)
+            ::plumber_rs::rust_servlet::invoke_servlet_async_cleanup::<$bs>(obj_ptr, handle, task, type_inst)
         }
     }
 }

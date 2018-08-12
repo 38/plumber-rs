@@ -6,8 +6,6 @@ use ::pstd::{
     pstd_type_field_t, 
     pstd_type_model_t, 
     pstd_type_instance_t, 
-    pstd_type_model_new, 
-    pstd_type_model_free, 
     pstd_type_model_get_accessor,
     pstd_type_model_get_field_info,
     pstd_type_model_on_pipe_type_checked
@@ -47,52 +45,56 @@ impl <'a, T:PrimitiveTypeTag<T>> TypeShapeChecker<'a,T> {
 }
 
 impl TypeModelObject {
-    pub fn new() -> Option<TypeModelObject>
+    pub fn from_raw(raw : *mut ::libc::c_void) -> Option<TypeModelObject>
     {
-        let inner_obj = unsafe{ pstd_type_model_new() };
+        let inner_obj = raw;
         if !inner_obj.is_null() 
         {
             return Some(TypeModelObject {
-                object : inner_obj
+                object : inner_obj as *mut pstd_type_model_t
             });
         }
         return None;
     }
 
-    pub fn assign_primitive<'a, 'b, S, T>(&self, pipe:&Pipe<S>, path:&'a str, primitive:&'b mut Primitive<T>) -> bool 
+    pub fn assign_primitive<'a, 'b, S, T>(&self, pipe:&Pipe<S>, path:&'a str, primitive:&'b mut Primitive<T>, validate_type:bool) -> bool 
         where T : PrimitiveTypeTag<T> 
     {
         if let None = primitive.accessor 
         {
             let (c_path, _path) = get_cstr(Some(path));
 
-            if -1 == unsafe { pstd_type_model_get_field_info(self.object, pipe.as_descriptor(), c_path, (&mut primitive.shape) as *mut PrimitiveTypeShape) }
+            if validate_type 
             {
-                return false;
-            }
 
-            let mut check_shape = Box::new(TypeShapeChecker::<T>{
-                shape : &primitive.shape,
-                phantom: PhantomData
-            });
-
-            extern "C" fn _validate_primitive_type_shape<T:PrimitiveTypeTag<T>>(_pipe: ::plumber_api::runtime_api_pipe_t, 
-                                                                                data : *mut ::std::os::raw::c_void) -> i32
-            {
-                let check_shape = unsafe{ Box::<TypeShapeChecker<T>>::from_raw(data as *mut TypeShapeChecker<T>) };
-                if check_shape.do_check()
+                if -1 == unsafe { pstd_type_model_get_field_info(self.object, pipe.as_descriptor(), c_path, (&mut primitive.shape) as *mut PrimitiveTypeShape) }
                 {
-                    return 0;
+                    return false;
                 }
-                return -1;
+
+                let mut check_shape = Box::new(TypeShapeChecker::<T>{
+                    shape : &primitive.shape,
+                    phantom: PhantomData
+                });
+
+                extern "C" fn _validate_primitive_type_shape<T:PrimitiveTypeTag<T>>(_pipe: ::plumber_api::runtime_api_pipe_t, 
+                                                                                    data : *mut ::std::os::raw::c_void) -> i32
+                {
+                    let check_shape = unsafe{ Box::<TypeShapeChecker<T>>::from_raw(data as *mut TypeShapeChecker<T>) };
+                    if check_shape.do_check()
+                    {
+                        return 0;
+                    }
+                    return -1;
+                }
+
+                let check_shape_ref = Box::leak(check_shape) as *mut TypeShapeChecker<T>;
+
+                unsafe{ pstd_type_model_on_pipe_type_checked(self.object, 
+                                                             pipe.as_descriptor(), 
+                                                             Some(_validate_primitive_type_shape::<T>), 
+                                                             check_shape_ref as *mut ::std::os::raw::c_void) };
             }
-
-            let check_shape_ref = Box::leak(check_shape) as *mut TypeShapeChecker<T>;
-
-            unsafe{ pstd_type_model_on_pipe_type_checked(self.object, 
-                                                         pipe.as_descriptor(), 
-                                                         Some(_validate_primitive_type_shape::<T>), 
-                                                         check_shape_ref as *mut ::std::os::raw::c_void) };
 
             let accessor = unsafe { pstd_type_model_get_accessor(self.object, pipe.as_descriptor(), c_path) };
 
@@ -109,11 +111,6 @@ impl TypeModelObject {
         }
 
         return false;
-    }
-    
-    pub fn free(&mut self)
-    {
-        unsafe { pstd_type_model_free(self.object) };
     }
 }
 

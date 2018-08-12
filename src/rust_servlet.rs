@@ -7,16 +7,17 @@ use libc::{c_char, c_void};
 use std::ffi::CStr;
 use std::ptr::null;
 use ::servlet::{Unimplemented, AsyncServlet, SyncServlet, ServletMode, ServletFuncResult, Bootstrap, AsyncTaskHandle};
+use ::protocol::TypeModelObject;
 
 impl SyncServlet for Unimplemented {
-    fn init(&mut self, _args:&[&str]) -> ServletFuncResult {Err(())}
+    fn init(&mut self, _args:&[&str], _type_inst:TypeModelObject) -> ServletFuncResult {Err(())}
     fn exec(&mut self) -> ServletFuncResult {Err(())}
     fn cleanup(&mut self) -> ServletFuncResult {Err(())}
 }
 
 impl AsyncServlet for Unimplemented {
     type AsyncTaskData = ();
-    fn init(&mut self, _args:&[&str]) -> ServletFuncResult {Err(())}
+    fn init(&mut self, _args:&[&str], _type_inst:TypeModelObject) -> ServletFuncResult {Err(())}
     fn async_init(&mut self, _handle:&AsyncTaskHandle) -> Option<Box<()>> { None }
     fn async_exec(_handle:&AsyncTaskHandle, _task_data:&mut Self::AsyncTaskData) -> ServletFuncResult {Err(())}
     fn async_cleanup(&mut self, _handle:&AsyncTaskHandle, _task_data:&mut Self::AsyncTaskData) -> ServletFuncResult {Err(())}
@@ -130,20 +131,22 @@ pub unsafe fn call_bootstrap_obj<T:Bootstrap>(argc: u32, argv: *const *const c_c
  *
  * Returns the servlet initialization result follows the Plumber convention
  **/
-pub fn invoke_servlet_init<BT:Bootstrap>(obj_ptr : *mut c_void, argc: u32, argv: *const *const c_char) -> i32 
+pub fn invoke_servlet_init<BT:Bootstrap>(obj_ptr : *mut c_void, argc: u32, argv: *const *const c_char, tm_ptr : *mut c_void) -> i32 
 {
+    let tm_obj = if let Some(obj) = TypeModelObject::from_raw(tm_ptr as *mut c_void) { obj } else { return -1; };
+
     if let Some(args) = unsafe{ make_argument_list(argc, argv) }
     {
         match unsafe { unpack_servlet_object::<BT>(obj_ptr) } 
         {
             ServletMode::SyncMode(ref mut servlet) => {
-                if let Ok(_) = servlet.init(&args[0..]) 
+                if let Ok(_) = servlet.init(&args[0..], tm_obj) 
                 {
                     return 0;
                 }
             },
             ServletMode::AsyncMode(ref mut servlet) => {
-                if let Ok(_) = servlet.init(&args[0..])
+                if let Ok(_) = servlet.init(&args[0..], tm_obj)
                 {
                     return 1;
                 }
@@ -162,11 +165,13 @@ pub fn invoke_servlet_init<BT:Bootstrap>(obj_ptr : *mut c_void, argc: u32, argv:
  * direcly calling this function seems weird.
  *
  * * `obj_ptr`: The servlet object pointer the framework acquired with bootstrap type
+ * * `type_inst`: The type instance object for current task
  *
  * Returns the execution result follows the Plumber convention
  **/
-pub fn invoke_servlet_sync_exec<BT:Bootstrap>(obj_ptr : *mut c_void) -> i32
+pub fn invoke_servlet_sync_exec<BT:Bootstrap>(obj_ptr : *mut c_void, _type_inst : *mut c_void) -> i32
 {
+    //TODO: pass the type instance object into the servlet
     if let ServletMode::SyncMode(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) } 
     {
         if let Ok(_) = servlet.exec()
@@ -216,11 +221,13 @@ pub fn invoke_servlet_cleanup<BT:Bootstrap>(obj_ptr : *mut c_void) -> i32
  *
  * * `obj_ptr`: The servlet object pointer the framework acquired with bootstrap type
  * * `handle_ptr`: The async task handle provided by the Plumber framework
+ * * `type_inst`: The type instance object for current async task
  *
  * Returns the ownership of Rust Box object that carries the data private data object
  **/
-pub fn invoke_servlet_async_init<BT:Bootstrap>(obj_ptr : *mut c_void, handle_ptr : *mut c_void) -> *mut c_void
+pub fn invoke_servlet_async_init<BT:Bootstrap>(obj_ptr : *mut c_void, handle_ptr : *mut c_void, _type_inst : *mut c_void) -> *mut c_void
 {
+    // TODO: pass the type instance object to the servlet 
     if let ServletMode::AsyncMode(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) }
     {
         let handle = unsafe{unpack_async_handle(handle_ptr)};
@@ -271,11 +278,13 @@ pub fn invoke_servlet_async_exec<BT:Bootstrap>(handle_ptr : *mut c_void, task_da
  * * `obj_ptr`: The servlet object pointer the framework acquired with bootstrap type
  * * `handle_ptr`: The async task handle provided by the Plumber framework
  * * `task_data_ptr`: The pointer to the task private data
+ * * `type_inst`: The type instance obect for current task
  *
  * Return status code in Plumber fashion
  **/
-pub fn invoke_servlet_async_cleanup<BT:Bootstrap>(obj_ptr : *mut c_void, handle_ptr: *mut c_void, task_data_ptr : *mut c_void) -> i32
+pub fn invoke_servlet_async_cleanup<BT:Bootstrap>(obj_ptr : *mut c_void, handle_ptr: *mut c_void, task_data_ptr : *mut c_void, _type_inst: *mut c_void) -> i32
 {
+    // TODO: pass the type instance object to the servlet
     if let ServletMode::AsyncMode(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) }
     {
         let handle = unsafe{ unpack_async_handle(handle_ptr) };

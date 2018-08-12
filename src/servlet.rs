@@ -8,6 +8,8 @@
 //! To create a Plumber servlet with rust, `Bootstrap` trait must be implemented by some type and
 //! this type should be used in `export_bootstrap!` macro.
 
+use ::protocol::TypeModelObject;
+
 /**
  * The servlet function call result
  **/
@@ -58,10 +60,11 @@ pub trait SyncServlet {
      * application gets started. All the pipe declaration should be done in this function.
      *
      * * `args`: The servlet init argument list
+     * * `type_model`: The type model object for this servlet
      *
      * Return the result of the servlet
      **/
-    fn init(&mut self, args:&[&str]) -> ServletFuncResult;
+    fn init(&mut self, args:&[&str], type_model: TypeModelObject) -> ServletFuncResult;
 
     /**
      * The sync execute function.
@@ -111,10 +114,11 @@ pub trait AsyncServlet {
      * application gets started. All the pipe declaration should be done in this function.
      *
      * * `args`: The servlet init argument list
+     * * `type_model`: The type model object
      *
      * Return the result of the servlet
      **/
-    fn init(&mut self, args:&[&str]) -> ServletFuncResult;
+    fn init(&mut self, args:&[&str], type_model : TypeModelObject) -> ServletFuncResult;
     /**
      * Initialize the async task.
      *
