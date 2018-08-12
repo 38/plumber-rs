@@ -1,6 +1,6 @@
 [package]
 name = "plumber-rs"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Hao Hou <haohou302@gmail.com>"]
 description = "The basic library for Plumber servlet written in Rust"
 keywords = ["Plumber", "dataflow-programming", "language-binding"]
