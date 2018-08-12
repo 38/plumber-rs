@@ -43,7 +43,8 @@ fn main()
     }
     else
     {
-        panic!("Cannot find libpstd.so, plumber-rs crate could not be built. (Hint: make sure you have plumber intalled or try to set PSTD_LIB_PATH environment variable)");
+        eprintln!("Cannot find libpstd.so, plumber-rs crate could not be built."
+        eprintln!("Hint: make sure you have plumber intalled or try to set PSTD_LIB_PATH environment variable");
     }
     println!("cargo:rustc-link-lib=pstd");
 }
