@@ -6,8 +6,8 @@ description = "The basic library for Plumber servlet written in Rust"
 keywords = ["Plumber", "dataflow-programming", "language-binding"]
 license = "BSD-2-Clause"
 readme = "README.md"
-repository = "https:://github.com/38/plumber-rs"
-homepage = "https://plumberserver.com/"
+repository = "https://github.com/38/plumber-rs"
+homepage = "https://plumberserver.com/index.html#plumber_rs_docs/plumber_rs"
 
 [dependencies]
 libc = "0.2.0"
