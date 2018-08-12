@@ -88,7 +88,7 @@ macro_rules! export_bootstrap {
                                                address_table : *const ::plumber_rs::ApiAddressTable, 
                                                va_helper : ::plumber_rs::VariadicWrapperFunc) -> *mut ::std::os::raw::c_void 
         {
-            assign_address_table(address_table, va_helper);
+            ::plumber_rs::assign_address_table(address_table, va_helper);
             return unsafe{ ::plumber_rs::rust_servlet::call_bootstrap_obj::<$bs>(argc, argv) };
         }
 

@@ -340,6 +340,8 @@ pub trait Model {
 // TODO: how to handle the writer ?
 //
 // Also we need to handle the token type 
+//
+// Another thing is constant support
 #[macro_export]
 macro_rules! protodef {
     (protodef $proto_name:ident { $([$pipe:ident.$($field:tt)*]:$type:ty => $model_name:ident;)* } ) => {
