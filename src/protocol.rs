@@ -22,6 +22,7 @@ use ::pstd::{
 use ::plumber_api_call::get_cstr;
 
 use std::marker::PhantomData;
+use std::collections::HashMap;
 
 /**
  * Type type instance object. For each time the Plumber framework activate the execution of the
@@ -282,6 +283,8 @@ impl <T : PrimitiveTypeTag<T> + Default> Primitive<T> {
 
         return None;
     }
+
+    /* TODO: we need to write the primitvie as well */
 }
 
 pub trait PrimitiveTypeTag<T:Sized + Default> 
@@ -324,3 +327,89 @@ primitive_type!{
     f32  => [type_size:4; is_numeric:1; is_signed:1; is_float:1; is_primitive_token:0; is_compound:0];
     f64  => [type_size:8; is_numeric:1; is_signed:1; is_float:1; is_primitive_token:0; is_compound:0];
 }
+
+pub trait ModelAccessor<'a> where Self:Sized {
+    type ModelType : Model;
+    fn new(model : &'a Self::ModelType, type_inst:&'a mut TypeInstanceObject) -> Option<Self>;
+}
+
+pub trait Model {
+    fn init_model<T>(&mut self, type_model:&mut TypeModelObject, pipes: HashMap<String, &mut Pipe<T>>) -> bool;
+}
+
+// TODO: how to handle the writer ?
+//
+// Also we need to handle the token type 
+#[macro_export]
+macro_rules! protodef {
+    (protodef $proto_name:ident { $([$pipe:ident.$($field:tt)*]:$type:ty => $model_name:ident;)* } ) => {
+        mod plumber_protocol {
+            use /*::plumber_rs*/::protocol::{Primitive, TypeModelObject, Model};
+            use /*::plumber_rs*/::pipe::Pipe;
+            use ::std::collections::HashMap;
+            pub struct $proto_name {
+                $(pub $model_name : Primitive<$type>,)*
+            }
+            impl Model for $proto_name {
+                fn init_model<T>(&mut self, 
+                                 obj:&mut TypeModelObject, 
+                                 pipes: HashMap<String, &mut Pipe<T>>) -> bool 
+                {
+                    $(
+                        if let Some(pipe) = pipes.get(stringify!($pipe))
+                        {
+                            if !obj.assign_primitive(pipe, stringify!($($field)*), &mut self.$model_name, true)
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    )*
+                    return true;
+                }
+            }
+        }
+        mod plumber_protocol_accessor {
+            use /*::plumber_rs*/::protocol::{ModelAccessor, TypeInstanceObject};
+            pub struct $proto_name<'a> {
+                //model : &'a ::plumber_protocol::$proto_name,
+                model : &'a ::protocol::plumber_protocol::$proto_name,
+                inst  : &'a mut TypeInstanceObject
+            }
+
+            impl <'a> $proto_name<'a> {
+                $(
+                    #[allow(dead_code)]
+                    pub fn $model_name(&mut self) -> Option<$type>
+                    {
+                        return self.model.$model_name.get(self.inst);
+                    }
+                )*
+            }
+
+            impl <'a> ModelAccessor<'a> for $proto_name<'a> {
+                type ModelType = ::protocol::plumber_protocol::$proto_name;
+                //type ModelType = ::plumber_protocol::$proto_name;
+                fn new(model : &'a Self::ModelType, type_inst:&'a mut TypeInstanceObject) -> Option<$proto_name<'a>>
+                {
+                    return Some($proto_name{
+                        model : model,
+                        inst  : type_inst
+                    });
+                }
+            }
+        }
+    }
+}
+
+/*
+protodef! {
+    protodef Test {
+        [input.position.x]:f32 => position_x;
+        [output.distance]:f32  => distance;
+    }
+}
+*/
