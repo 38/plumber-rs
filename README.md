@@ -27,7 +27,6 @@ name = "hello-rust"
 crate-type= ["cdylib"]
 
 [dependencies]
-libc="0.2.0"
 plumber-rs = {git = "https://github.com/38/plumber-rs.git"}
 ```
 
@@ -37,16 +36,17 @@ In Rust, a servlet is actually a trait. For the sync servlet, we can implemnet t
 
 ```rust
 use plumber_rs::servlet::{SyncServlet, Unimplemented, ServletMode, ServletFuncResult, Bootstrap};
+use plumber_rs::protocol::{TypeModelObject, TypeInstanceObject};
 
 struct HelloServlet {}
 
 impl SyncServlet for HelloServlet {
-    fn init(&mut self, _args:&[&str]) -> ServletFuncResult 
+    fn init(&mut self, _args:&[&str], _tm:TypeModelObject) -> ServletFuncResult 
     {
         plumber_log!(N "Hello World");
         return Ok(());
     }
-    fn exec(&mut self) -> ServletFuncResult  { Ok(()) }
+    fn exec(&mut self, _ti:TypeInstanceObject) -> ServletFuncResult  { Ok(()) }
     fn cleanup(&mut self) -> ServletFuncResult { Ok(()) }
 }
 
@@ -71,12 +71,14 @@ export_bootstrap!(BootstrapType);
 
 **Step 5** Build the servlet
 
-To build the servlet you should export two environment variable `PSTD_LIB_PATH` which is the path for libpstd.
+To build the servlet successfully you should have Plumber installed. See the plumber install instruction at [here](https://plumberserver.com/index.html#documentation.compile).
+
+If you have Plumber installed under the `/`, `/usr/`, `/usr/local` or your home directory, you should be able to compile the servlet successfully.
+If you have some other install path, please specify the environment root with `ENVROOT` envrionment variable.
 
 And to build the servlet, you can simple run `cargo build`
 
 ```bash
-export PSTD_LIB_PATH="/usr/lib"
 cargo build
 ```
 
@@ -88,16 +90,17 @@ extern crate plumber_rs;
 extern crate libc;
 
 use plumber_rs::servlet::{SyncServlet, Unimplemented, ServletMode, ServletFuncResult, Bootstrap};
+use plumber_rs::protocol::{TypeModelObject, TypeInstanceObject};
 
 struct HelloServlet {}
 
 impl SyncServlet for HelloServlet {
-    fn init(&mut self, _args:&[&str]) -> ServletFuncResult 
+    fn init(&mut self, _args:&[&str], _tm:TypeModelObject) -> ServletFuncResult 
     {
         plumber_log!(N "Hello World");
         return Ok(());
     }
-    fn exec(&mut self) -> ServletFuncResult  { Ok(()) }
+    fn exec(&mut self, _ti:TypeInstanceObject) -> ServletFuncResult  { Ok(()) }
     fn cleanup(&mut self) -> ServletFuncResult { Ok(()) }
 }
 
