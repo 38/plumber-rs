@@ -8,7 +8,7 @@
 //! To create a Plumber servlet with rust, `Bootstrap` trait must be implemented by some type and
 //! this type should be used in `export_bootstrap!` macro.
 
-use ::protocol::TypeModelObject;
+use ::protocol::{TypeModelObject, TypeInstanceObject};
 
 /**
  * The servlet function call result
@@ -72,9 +72,11 @@ pub trait SyncServlet {
      * This should be called by Plumber framework when the framework decide to activate the servlet
      * due to some input event. This function will be called from any worker thread.
      *
+     * * `type_inst`: The type instance object for current task
+     *
      * Return The servlet function result.
      **/
-    fn exec(&mut self) -> ServletFuncResult;
+    fn exec(&mut self, type_inst : TypeInstanceObject) -> ServletFuncResult;
 
     /**
      * The cleanup function
@@ -125,11 +127,12 @@ pub trait AsyncServlet {
      * This function will be called by the Plumber framework from any worker thread. The servlet
      * should allocate the private data object which would be used for this task only.
      *
-     * * `handle` The async handle for this task
+     * * `handle`: The async handle for this task
+     * * `type_inst`: The type instance object for current task
      *
      * Return The newly created async task private data, None indicates failure
      **/
-    fn async_init(&mut self, handle:&AsyncTaskHandle) -> Option<Box<Self::AsyncTaskData>>;
+    fn async_init(&mut self, handle:&AsyncTaskHandle, type_inst: TypeInstanceObject) -> Option<Box<Self::AsyncTaskData>>;
 
     /**
      * Run the execution task. 
@@ -163,10 +166,11 @@ pub trait AsyncServlet {
      *
      * * `handle`: The async task handle
      * * `task_data`: The async task private data
+     * * `type_inst`: The type instance object for current task
      *
      * Return the servlet function invocation result
      **/
-    fn async_cleanup(&mut self, handle:&AsyncTaskHandle, task_data:&mut Self::AsyncTaskData) -> ServletFuncResult;
+    fn async_cleanup(&mut self, handle:&AsyncTaskHandle, task_data:&mut Self::AsyncTaskData, type_inst: TypeInstanceObject) -> ServletFuncResult;
     
     /**
      * The cleanup function

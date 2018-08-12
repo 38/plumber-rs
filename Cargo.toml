@@ -10,4 +10,4 @@ repository = "https://github.com/38/plumber-rs"
 homepage = "https://plumberserver.com/index.html#plumber_rs_docs/plumber_rs"
 
 [dependencies]
-libc = "0.2.0"
+#libc = "0.2.0"

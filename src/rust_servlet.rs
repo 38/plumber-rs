@@ -3,25 +3,57 @@
 //!The hepler function used by the Rust servlet. 
 //!
 //!All the function defines in this file should only be used by calling `export_bootstrap` macro. 
-use libc::{c_char, c_void};
+use std::os::raw::{c_char, c_void};
 use std::ffi::CStr;
 use std::ptr::null;
-use ::servlet::{Unimplemented, AsyncServlet, SyncServlet, ServletMode, ServletFuncResult, Bootstrap, AsyncTaskHandle};
-use ::protocol::TypeModelObject;
+use ::servlet::{Unimplemented, AsyncServlet, SyncServlet, ServletMode, ServletFuncResult, Bootstrap, AsyncTaskHandle, fail};
+use ::protocol::{TypeModelObject, TypeInstanceObject};
 
 impl SyncServlet for Unimplemented {
-    fn init(&mut self, _args:&[&str], _type_inst:TypeModelObject) -> ServletFuncResult {Err(())}
-    fn exec(&mut self) -> ServletFuncResult {Err(())}
-    fn cleanup(&mut self) -> ServletFuncResult {Err(())}
+    fn init(&mut self, _args:&[&str], 
+            _type_inst:TypeModelObject) -> ServletFuncResult 
+    {
+        return fail();
+    }
+    fn exec(&mut self, _ti:TypeInstanceObject) -> ServletFuncResult 
+    {
+        return fail();
+    }
+    fn cleanup(&mut self) -> ServletFuncResult
+    {
+        return fail();
+    }
 }
 
 impl AsyncServlet for Unimplemented {
     type AsyncTaskData = ();
-    fn init(&mut self, _args:&[&str], _type_inst:TypeModelObject) -> ServletFuncResult {Err(())}
-    fn async_init(&mut self, _handle:&AsyncTaskHandle) -> Option<Box<()>> { None }
-    fn async_exec(_handle:&AsyncTaskHandle, _task_data:&mut Self::AsyncTaskData) -> ServletFuncResult {Err(())}
-    fn async_cleanup(&mut self, _handle:&AsyncTaskHandle, _task_data:&mut Self::AsyncTaskData) -> ServletFuncResult {Err(())}
-    fn cleanup(&mut self) -> ServletFuncResult{Err(())}
+    fn init(&mut self, _args:&[&str], 
+            _type_inst:TypeModelObject) -> ServletFuncResult
+    {
+        return fail();
+    }
+    fn async_init(&mut self, 
+                  _handle:&AsyncTaskHandle, 
+                  _ti:TypeInstanceObject) -> Option<Box<()>> 
+    {
+        return None;
+    }
+    fn async_exec(_handle:&AsyncTaskHandle, 
+                  _task_data:&mut Self::AsyncTaskData) -> ServletFuncResult 
+    {
+        return fail();
+    }
+    fn async_cleanup(&mut self, 
+                     _handle:&AsyncTaskHandle, 
+                     _task_data:&mut Self::AsyncTaskData, 
+                     _ti:TypeInstanceObject) -> ServletFuncResult 
+    {
+        return fail();
+    }
+    fn cleanup(&mut self) -> ServletFuncResult
+    {
+        return fail();
+    }
 }
 
 unsafe fn make_argument_list<'a>(argc: u32, argv: *const *const c_char) -> Option<Vec<&'a str>>
@@ -169,14 +201,16 @@ pub fn invoke_servlet_init<BT:Bootstrap>(obj_ptr : *mut c_void, argc: u32, argv:
  *
  * Returns the execution result follows the Plumber convention
  **/
-pub fn invoke_servlet_sync_exec<BT:Bootstrap>(obj_ptr : *mut c_void, _type_inst : *mut c_void) -> i32
+pub fn invoke_servlet_sync_exec<BT:Bootstrap>(obj_ptr : *mut c_void, type_inst : *mut c_void) -> i32
 {
-    //TODO: pass the type instance object into the servlet
-    if let ServletMode::SyncMode(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) } 
+    if let Some(type_inst_obj) = TypeInstanceObject::from_raw(type_inst)
     {
-        if let Ok(_) = servlet.exec()
+        if let ServletMode::SyncMode(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) } 
         {
-            return 0;
+            if let Ok(_) = servlet.exec(type_inst_obj)
+            {
+                return 0;
+            }
         }
     }
     return -1;
@@ -225,16 +259,18 @@ pub fn invoke_servlet_cleanup<BT:Bootstrap>(obj_ptr : *mut c_void) -> i32
  *
  * Returns the ownership of Rust Box object that carries the data private data object
  **/
-pub fn invoke_servlet_async_init<BT:Bootstrap>(obj_ptr : *mut c_void, handle_ptr : *mut c_void, _type_inst : *mut c_void) -> *mut c_void
+pub fn invoke_servlet_async_init<BT:Bootstrap>(obj_ptr : *mut c_void, handle_ptr : *mut c_void, type_inst : *mut c_void) -> *mut c_void
 {
-    // TODO: pass the type instance object to the servlet 
-    if let ServletMode::AsyncMode(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) }
+    if let Some(type_inst_obj) = TypeInstanceObject::from_raw(type_inst)
     {
-        let handle = unsafe{unpack_async_handle(handle_ptr)};
-
-        if let Some(task_data) = servlet.async_init(handle)
+        if let ServletMode::AsyncMode(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) }
         {
-            return Box::into_raw(task_data) as *mut c_void;
+            let handle = unsafe{unpack_async_handle(handle_ptr)};
+
+            if let Some(task_data) = servlet.async_init(handle, type_inst_obj)
+            {
+                return Box::into_raw(task_data) as *mut c_void;
+            }
         }
     }
 
@@ -282,17 +318,19 @@ pub fn invoke_servlet_async_exec<BT:Bootstrap>(handle_ptr : *mut c_void, task_da
  *
  * Return status code in Plumber fashion
  **/
-pub fn invoke_servlet_async_cleanup<BT:Bootstrap>(obj_ptr : *mut c_void, handle_ptr: *mut c_void, task_data_ptr : *mut c_void, _type_inst: *mut c_void) -> i32
+pub fn invoke_servlet_async_cleanup<BT:Bootstrap>(obj_ptr : *mut c_void, handle_ptr: *mut c_void, task_data_ptr : *mut c_void, type_inst: *mut c_void) -> i32
 {
-    // TODO: pass the type instance object to the servlet
-    if let ServletMode::AsyncMode(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) }
+    if let Some(type_inst_obj) = TypeInstanceObject::from_raw(type_inst)
     {
-        let handle = unsafe{ unpack_async_handle(handle_ptr) };
-        let task_data = unsafe { unpack_async_task_data::<BT>(task_data_ptr) };
-
-        if let Ok(_) = servlet.async_cleanup(handle, task_data)
+        if let ServletMode::AsyncMode(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) }
         {
-            return 0;
+            let handle = unsafe{ unpack_async_handle(handle_ptr) };
+            let task_data = unsafe { unpack_async_task_data::<BT>(task_data_ptr) };
+
+            if let Ok(_) = servlet.async_cleanup(handle, task_data, type_inst_obj)
+            {
+                return 0;
+            }
         }
     }
 

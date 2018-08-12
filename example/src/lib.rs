@@ -1,11 +1,10 @@
 #[macro_use]
 extern crate plumber_rs;
-extern crate libc;
 
 use plumber_rs::*;
 use plumber_rs::servlet::{SyncServlet, ServletFuncResult, Bootstrap, Unimplemented, ServletMode};
 use plumber_rs::pipe::{Pipe, PIPE_INPUT, PIPE_OUTPUT, PIPE_PERSIST};
-use plumber_rs::protocol::TypeModelObject;
+use plumber_rs::protocol::{TypeModelObject, TypeInstanceObject};
 
 use std::io::Write;
 
@@ -25,7 +24,7 @@ impl SyncServlet for Servlet {
         //plumber_log!(W  "Type model {:?}", unsafe{pstd_type_model_new()});
         return Ok(());
     }
-    fn exec(&mut self) -> ServletFuncResult 
+    fn exec(&mut self, _ti : TypeInstanceObject) -> ServletFuncResult 
     { 
         let mut reader = self.input.as_bufreader();
         let mut line = String::new();

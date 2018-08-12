@@ -8,5 +8,4 @@ name = "servlet"
 crate-type= ["cdylib"]
 
 [dependencies]
-libc="0.2.0"
 plumber-rs = {path = ".."}

@@ -15,7 +15,8 @@ use ::pstd::{
     pstd_type_instance_t, 
     pstd_type_model_get_accessor,
     pstd_type_model_get_field_info,
-    pstd_type_model_on_pipe_type_checked
+    pstd_type_model_on_pipe_type_checked,
+    pstd_type_instance_read
 };
 
 use ::plumber_api_call::get_cstr;
@@ -23,11 +24,59 @@ use ::plumber_api_call::get_cstr;
 use std::marker::PhantomData;
 
 /**
- * Type type instance object
+ * Type type instance object. For each time the Plumber framework activate the execution of the
+ * servlet, it will automatically create a data buffer called type instance, which is used to
+ * tracking the protocol data.
  *
- * TODO: This is just a place holder, we should implement this later
+ * This is the Rust wrapper for the type instance object. It doesn't represent the ownership of the
+ * lower-level type instance data type. This is just a wrapper in Rust.
  **/
-pub type TypeInstanceObject = pstd_type_instance_t;
+pub struct TypeInstanceObject {
+    /// The pointer to the actual instance object
+    object: *mut pstd_type_instance_t
+}
+
+impl TypeInstanceObject {
+    /**
+     * Createe a new type instance object wrapper from the raw pointer
+     *
+     * * `raw`: The raw pointer to create
+     *
+     * Return either the newly created wrapper object or None
+     **/
+    pub fn from_raw(raw: *mut ::std::os::raw::c_void) -> Option<TypeInstanceObject>
+    {
+        if !raw.is_null()
+        {
+            return Some(TypeInstanceObject{
+                object : raw as *mut pstd_type_instance_t
+            });
+        }
+        return None;
+    }
+
+    /**
+     * Read an accessor from the given type instance object.
+     *
+     * This is the low level read function of the Plumber's protocol typing system.
+     *
+     * * `acc`: The accessor to read
+     * * `buf`: The buffer used to return the read result
+     * * `size`: The number of bytes that needs to be read
+     *
+     * Returns if the read operation has successfully done which means we read all the expected
+     * data.
+     **/
+    fn read(&mut self,
+            acc:pstd_type_accessor_t,
+            buf:*mut ::std::os::raw::c_void,
+            size: usize) -> bool
+    {
+        let result = unsafe{ pstd_type_instance_read(self.object, acc, buf, size) };
+
+        return result == size;
+    }
+}
 
 /**
  * The shape of a primitive. This is used to check if the Rust type is a supported protocol
@@ -66,14 +115,14 @@ pub struct TypeModelObject {
 /**
  * The additonal data used when we want to check the type shape of the primitive
  **/
-struct TypeShapeChecker<'a , T : PrimitiveTypeTag<T>> {
+struct TypeShapeChecker<'a , T : PrimitiveTypeTag<T> + Default> {
     /// The shape buffer that will be written when the type inference is done
     shape   : &'a PrimitiveTypeShape,
     /// Keep the type information
     phantom : PhantomData<T>
 }
 
-impl <'a, T:PrimitiveTypeTag<T>> TypeShapeChecker<'a,T> {
+impl <'a, T:PrimitiveTypeTag<T> + Default> TypeShapeChecker<'a,T> {
     fn do_check(&self) -> bool { return T::validate_type_shape(self.shape); }
 }
 
@@ -88,7 +137,7 @@ impl TypeModelObject {
      *
      * Returns the newly created wrapper object or None
      **/
-    pub fn from_raw(raw : *mut ::libc::c_void) -> Option<TypeModelObject>
+    pub fn from_raw(raw : *mut ::std::os::raw::c_void) -> Option<TypeModelObject>
     {
         let inner_obj = raw;
         if !inner_obj.is_null() 
@@ -104,10 +153,11 @@ impl TypeModelObject {
     /**
      * Add a check of type shape for the accessor
      **/
-    fn _add_type_shape_check<S, T:PrimitiveTypeTag<T>>(&self, 
-                                                   pipe:&Pipe<S>,
-                                                   path:*const ::libc::c_char,
-                                                   primitive:&mut Primitive<T>) -> bool
+    fn _add_type_shape_check<S, T>(&self, 
+                                   pipe:&Pipe<S>,
+                                   path:*const ::std::os::raw::c_char,
+                                   primitive:&mut Primitive<T>) -> bool
+        where T : PrimitiveTypeTag<T> + Default
     {
         if -1 == unsafe { 
             pstd_type_model_get_field_info(self.object, 
@@ -124,8 +174,9 @@ impl TypeModelObject {
             phantom: PhantomData
         });
 
-        extern "C" fn _validate_primitive_type_shape<T:PrimitiveTypeTag<T>>(_pipe: ::plumber_api::runtime_api_pipe_t, 
-                                                                            data : *mut ::std::os::raw::c_void) -> i32
+        extern "C" fn _validate_primitive_type_shape<T>(_pipe: ::plumber_api::runtime_api_pipe_t, 
+                                                        data : *mut ::std::os::raw::c_void) -> i32
+            where T : PrimitiveTypeTag<T>+Default
         {
             let check_shape = unsafe{ Box::<TypeShapeChecker<T>>::from_raw(data as *mut TypeShapeChecker<T>) };
             if check_shape.do_check()
@@ -161,7 +212,7 @@ impl TypeModelObject {
                                           path:&'a str, 
                                           primitive:&'b mut Primitive<T>, 
                                           validate_type:bool) -> bool 
-        where T : PrimitiveTypeTag<T> 
+        where T : PrimitiveTypeTag<T> + Default
     {
         if let None = primitive.accessor 
         {
@@ -193,7 +244,7 @@ impl TypeModelObject {
 /**
  * The object used to represent a pritmive type in the language-neutral protocol database
  **/
-pub struct Primitive<ActualType : PrimitiveTypeTag<ActualType> > {
+pub struct Primitive<ActualType : PrimitiveTypeTag<ActualType> + Default> {
     /// The type accessor object
     accessor : Option<pstd_type_accessor_t>,
     /// The shape of this primmitive
@@ -202,7 +253,7 @@ pub struct Primitive<ActualType : PrimitiveTypeTag<ActualType> > {
     _phantom : PhantomData<ActualType>
 }
 
-impl <T : PrimitiveTypeTag<T>> Primitive<T> {
+impl <T : PrimitiveTypeTag<T> + Default> Primitive<T> {
     /**
      * Create a new type primitive
      **/
@@ -214,9 +265,26 @@ impl <T : PrimitiveTypeTag<T>> Primitive<T> {
             _phantom : PhantomData
         };
     }
+
+    pub fn get(&self, type_inst:&mut TypeInstanceObject) -> Option<T>
+    {
+        if let Some(ref acc_ref) = self.accessor
+        {
+            let mut buf:T = Default::default();
+            let mut buf_ptr = &mut buf as *mut T;
+            let acc = acc_ref.clone();
+
+            if type_inst.read(acc, buf_ptr as *mut ::std::os::raw::c_void, ::std::mem::size_of::<T>())
+            {
+                return Some(buf);
+            }
+        }
+
+        return None;
+    }
 }
 
-pub trait PrimitiveTypeTag<T> 
+pub trait PrimitiveTypeTag<T:Sized + Default> 
 {
     /**
      * Validate the type shape 

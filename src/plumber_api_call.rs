@@ -1,6 +1,6 @@
 // Copyright 2018, Hao Hou
 use std::ffi::{CString};
-use libc::c_char;
+use std::os::raw::c_char;
 use std::ptr::null;
 
 macro_rules! plumber_api_call {
