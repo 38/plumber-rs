@@ -5,6 +5,7 @@ extern crate libc;
 use plumber_rs::*;
 use plumber_rs::servlet::{SyncServlet, ServletFuncResult, Bootstrap, Unimplemented, ServletMode};
 use plumber_rs::pipe::{Pipe, PIPE_INPUT, PIPE_OUTPUT, PIPE_PERSIST};
+use plumber_rs::protocol::TypeModelObject;
 
 use std::io::Write;
 
@@ -17,7 +18,7 @@ struct Servlet {
 }
 
 impl SyncServlet for Servlet {
-    fn init(&mut self, _args:&[&str]) -> ServletFuncResult 
+    fn init(&mut self, _args:&[&str], _tmo : TypeModelObject) -> ServletFuncResult 
     {
         plumber_log!(W  "This is a test {:?}", _args);
         //use plumber_rs::pstd::pstd_type_model_new;
