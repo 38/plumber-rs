@@ -7,7 +7,7 @@
 //! typeing.
 //!
 
-use ::pipe::Pipe;
+use ::pipe::PipeDescriptor;
 use ::pstd::{
     pstd_type_accessor_t, 
     pstd_type_field_t, 
@@ -154,15 +154,15 @@ impl TypeModelObject {
     /**
      * Add a check of type shape for the accessor
      **/
-    fn _add_type_shape_check<S, T>(&self, 
-                                   pipe:&Pipe<S>,
-                                   path:*const ::std::os::raw::c_char,
-                                   primitive:&mut Primitive<T>) -> bool
+    fn _add_type_shape_check<T>(&self, 
+                                pipe:PipeDescriptor,
+                                path:*const ::std::os::raw::c_char,
+                                primitive:&mut Primitive<T>) -> bool
         where T : PrimitiveTypeTag<T> + Default
     {
         if -1 == unsafe { 
             pstd_type_model_get_field_info(self.object, 
-                                           pipe.as_descriptor(), 
+                                           pipe, 
                                            path, 
                                            (&mut primitive.shape) as *mut PrimitiveTypeShape) 
         }
@@ -190,7 +190,7 @@ impl TypeModelObject {
         let check_shape_ref = Box::leak(check_shape) as *mut TypeShapeChecker<T>;
 
         unsafe{ pstd_type_model_on_pipe_type_checked(self.object, 
-                                                     pipe.as_descriptor(), 
+                                                     pipe, 
                                                      Some(_validate_primitive_type_shape::<T>), 
                                                      check_shape_ref as *mut ::std::os::raw::c_void) };
         return true;
@@ -208,8 +208,8 @@ impl TypeModelObject {
      *
      * Returns if the operation has sucessfully completed
      **/
-    pub fn assign_primitive<'a, 'b, S, T>(&self, 
-                                          pipe:&Pipe<S>, 
+    pub fn assign_primitive<'a, 'b, T>(&self, 
+                                          pipe:PipeDescriptor, 
                                           path:&'a str, 
                                           primitive:&'b mut Primitive<T>, 
                                           validate_type:bool) -> bool 
@@ -224,7 +224,7 @@ impl TypeModelObject {
                 return false;
             }
 
-            let accessor = unsafe { pstd_type_model_get_accessor(self.object, pipe.as_descriptor(), c_path) };
+            let accessor = unsafe { pstd_type_model_get_accessor(self.object, pipe, c_path) };
 
             if accessor as i32 == -1 
             {
@@ -334,7 +334,8 @@ pub trait ModelAccessor<'a> where Self:Sized {
 }
 
 pub trait Model {
-    fn init_model<T>(&mut self, type_model:&mut TypeModelObject, pipes: HashMap<String, &mut Pipe<T>>) -> bool;
+    fn init_model(&mut self, type_model:&mut TypeModelObject, pipes: HashMap<String, PipeDescriptor>) -> bool;
+    fn new() -> Self;
 }
 
 // TODO: how to handle the writer ?
@@ -346,21 +347,21 @@ pub trait Model {
 macro_rules! protodef {
     (protodef $proto_name:ident { $([$pipe:ident.$($field:tt)*]:$type:ty => $model_name:ident;)* } ) => {
         mod plumber_protocol {
-            use /*::plumber_rs*/::protocol::{Primitive, TypeModelObject, Model};
-            use /*::plumber_rs*/::pipe::Pipe;
+            use ::plumber_rs::protocol::{Primitive, TypeModelObject, Model};
+            use ::plumber_rs::pipe::PipeDescriptor;
             use ::std::collections::HashMap;
             pub struct $proto_name {
                 $(pub $model_name : Primitive<$type>,)*
             }
             impl Model for $proto_name {
-                fn init_model<T>(&mut self, 
-                                 obj:&mut TypeModelObject, 
-                                 pipes: HashMap<String, &mut Pipe<T>>) -> bool 
+                fn init_model(&mut self, 
+                              obj:&mut TypeModelObject, 
+                              pipes: HashMap<String, PipeDescriptor>) -> bool 
                 {
                     $(
                         if let Some(pipe) = pipes.get(stringify!($pipe))
                         {
-                            if !obj.assign_primitive(pipe, stringify!($($field)*), &mut self.$model_name, true)
+                            if !obj.assign_primitive(*pipe, stringify!($($field)*), &mut self.$model_name, true)
                             {
                                 return false;
                             }
@@ -372,29 +373,53 @@ macro_rules! protodef {
                     )*
                     return true;
                 }
+                fn new() -> Self
+                {
+                    return $proto_name {
+                        $(
+                            $model_name : Primitive::new()
+                        ),*
+                    };
+                }
             }
         }
         mod plumber_protocol_accessor {
-            use /*::plumber_rs*/::protocol::{ModelAccessor, TypeInstanceObject};
+            use ::plumber_rs::protocol::{ModelAccessor, TypeInstanceObject, PrimitiveTypeTag, Primitive};
             pub struct $proto_name<'a> {
-                //model : &'a ::plumber_protocol::$proto_name,
-                model : &'a ::protocol::plumber_protocol::$proto_name,
+                model : &'a ::plumber_protocol::$proto_name,
                 inst  : &'a mut TypeInstanceObject
+            }
+
+            pub struct FieldAccessor<'a, T: PrimitiveTypeTag<T> + Default + 'a> {
+                target : &'a Primitive<T>,
+                inst   : &'a mut TypeInstanceObject
+            }
+
+            impl <'a, T: PrimitiveTypeTag<T> + Default> FieldAccessor<'a, T> {
+                #[allow(dead_code)]
+                fn get(&mut self) -> Option<T>
+                {
+                    return self.target.get(self.inst);
+                }
+
+                // TODO: implement the set
             }
 
             impl <'a> $proto_name<'a> {
                 $(
                     #[allow(dead_code)]
-                    pub fn $model_name(&mut self) -> Option<$type>
+                    pub fn $model_name(&mut self) -> FieldAccessor<$type>
                     {
-                        return self.model.$model_name.get(self.inst);
+                        return FieldAccessor::<$type>{
+                            target: &self.model.$model_name,
+                            inst  : self.inst
+                        };
                     }
                 )*
             }
 
             impl <'a> ModelAccessor<'a> for $proto_name<'a> {
-                type ModelType = ::protocol::plumber_protocol::$proto_name;
-                //type ModelType = ::plumber_protocol::$proto_name;
+                type ModelType = ::plumber_protocol::$proto_name;
                 fn new(model : &'a Self::ModelType, type_inst:&'a mut TypeInstanceObject) -> Option<$proto_name<'a>>
                 {
                     return Some($proto_name{
@@ -406,12 +431,3 @@ macro_rules! protodef {
         }
     }
 }
-
-/*
-protodef! {
-    protodef Test {
-        [input.position.x]:f32 => position_x;
-        [output.distance]:f32  => distance;
-    }
-}
-*/
