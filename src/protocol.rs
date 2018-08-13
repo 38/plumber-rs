@@ -338,6 +338,21 @@ pub trait Model {
     fn new() -> Self;
 }
 
+impl Model for () {
+    fn init_model(&mut self, _tm:&mut TypeModelObject, _p:HashMap<String, PipeDescriptor>) -> bool { false }
+    fn new() {}
+}
+
+impl <'a> ModelAccessor<'a> for () {
+    type ModelType = ();
+    fn new(_m : &'a (), _ti: &'a mut TypeInstanceObject) -> Option<()>
+    {
+        None
+    }
+}
+
+type Untyped = ();
+
 // TODO: how to handle the writer ?
 //
 // Also we need to handle the token type 
