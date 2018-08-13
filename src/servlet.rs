@@ -8,7 +8,7 @@
 //! To create a Plumber servlet with rust, `Bootstrap` trait must be implemented by some type and
 //! this type should be used in `export_bootstrap!` macro.
 
-use ::protocol::{TypeModelObject, TypeInstanceObject, ProtocolModel, DataModel};
+use ::protocol::{ProtocolModel, DataModel};
 
 /**
  * The servlet function call result
@@ -56,7 +56,7 @@ pub trait SyncServlet {
 
     type ProtocolType : ProtocolModel;
 
-    type DataModelType: DataModel;
+    type DataModelType: DataModel<Self::ProtocolType>;
 
     /**
      * The initialization function. 
@@ -65,11 +65,11 @@ pub trait SyncServlet {
      * application gets started. All the pipe declaration should be done in this function.
      *
      * * `args`: The servlet init argument list
-     * * `type_model`: The type model object for this servlet
+     * * `proto_model`: The protocol model object for this servlet
      *
      * Return the result of the servlet
      **/
-    fn init(&mut self, args:&[&str], type_model: TypeModelObject) -> ServletFuncResult;
+    fn init(&mut self, args:&[&str], proto_model: &mut Self::ProtocolType) -> ServletFuncResult;
 
     /**
      * The sync execute function.
@@ -77,11 +77,11 @@ pub trait SyncServlet {
      * This should be called by Plumber framework when the framework decide to activate the servlet
      * due to some input event. This function will be called from any worker thread.
      *
-     * * `type_inst`: The type instance object for current task
+     * * `data_model`: The data model object which can be used to access the typed data
      *
      * Return The servlet function result.
      **/
-    fn exec(&mut self, type_inst : TypeInstanceObject) -> ServletFuncResult;
+    fn exec(&mut self, data_model : Self::DataModelType) -> ServletFuncResult;
 
     /**
      * The cleanup function
@@ -102,6 +102,11 @@ pub trait SyncServlet {
  * CPU bound and this will makes the task yield the worker thread to other event. 
  **/
 pub trait AsyncServlet {
+
+    type ProtocolType : ProtocolModel;
+
+    type DataModelType: DataModel<Self::ProtocolType>;
+
     /**
      * The private data buffer used by the async buffer. 
      *
@@ -121,11 +126,11 @@ pub trait AsyncServlet {
      * application gets started. All the pipe declaration should be done in this function.
      *
      * * `args`: The servlet init argument list
-     * * `type_model`: The type model object
+     * * `proto_model`: The protocol model object
      *
      * Return the result of the servlet
      **/
-    fn init(&mut self, args:&[&str], type_model : TypeModelObject) -> ServletFuncResult;
+    fn init(&mut self, args:&[&str], proto_model : &mut Self::ProtocolType) -> ServletFuncResult;
     /**
      * Initialize the async task.
      *
@@ -133,11 +138,11 @@ pub trait AsyncServlet {
      * should allocate the private data object which would be used for this task only.
      *
      * * `handle`: The async handle for this task
-     * * `type_inst`: The type instance object for current task
+     * * `data_model`: The data model which can be used to access the typed data for this task
      *
      * Return The newly created async task private data, None indicates failure
      **/
-    fn async_init(&mut self, handle:&AsyncTaskHandle, type_inst: TypeInstanceObject) -> Option<Box<Self::AsyncTaskData>>;
+    fn async_init(&mut self, handle:&AsyncTaskHandle, data_model:Self::DataModelType) -> Option<Box<Self::AsyncTaskData>>;
 
     /**
      * Run the execution task. 
@@ -171,11 +176,11 @@ pub trait AsyncServlet {
      *
      * * `handle`: The async task handle
      * * `task_data`: The async task private data
-     * * `type_inst`: The type instance object for current task
+     * * `data_model`: The data model which can be used to access the typed data for this task
      *
      * Return the servlet function invocation result
      **/
-    fn async_cleanup(&mut self, handle:&AsyncTaskHandle, task_data:&mut Self::AsyncTaskData, type_inst: TypeInstanceObject) -> ServletFuncResult;
+    fn async_cleanup(&mut self, handle:&AsyncTaskHandle, task_data:&mut Self::AsyncTaskData, data_model:Self::DataModelType) -> ServletFuncResult;
     
     /**
      * The cleanup function

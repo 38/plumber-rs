@@ -6,18 +6,19 @@
 use std::os::raw::{c_char, c_void};
 use std::ffi::CStr;
 use std::ptr::null;
+use std::rc::Rc;
 use ::servlet::{Unimplemented, AsyncServlet, SyncServlet, ServletMode, ServletFuncResult, Bootstrap, AsyncTaskHandle, fail};
-use ::protocol::{TypeModelObject, TypeInstanceObject, Untyped};
+use ::protocol::{TypeModelObject, TypeInstanceObject, Untyped, ProtocolModel, DataModel};
 
 impl SyncServlet for Unimplemented {
     type ProtocolType = Untyped;
     type DataModelType = Untyped;
     fn init(&mut self, _args:&[&str], 
-            _type_inst:TypeModelObject) -> ServletFuncResult 
+            _type_inst : &mut Untyped) -> ServletFuncResult 
     {
         return fail();
     }
-    fn exec(&mut self, _ti:TypeInstanceObject) -> ServletFuncResult 
+    fn exec(&mut self, _ti : Untyped) -> ServletFuncResult 
     {
         return fail();
     }
@@ -28,15 +29,17 @@ impl SyncServlet for Unimplemented {
 }
 
 impl AsyncServlet for Unimplemented {
+    type ProtocolType = ();
+    type DataModelType = ();
     type AsyncTaskData = ();
     fn init(&mut self, _args:&[&str], 
-            _type_inst:TypeModelObject) -> ServletFuncResult
+            _type_inst:&mut ()) -> ServletFuncResult
     {
         return fail();
     }
     fn async_init(&mut self, 
                   _handle:&AsyncTaskHandle, 
-                  _ti:TypeInstanceObject) -> Option<Box<()>> 
+                  _ti:()) -> Option<Box<()>> 
     {
         return None;
     }
@@ -48,7 +51,7 @@ impl AsyncServlet for Unimplemented {
     fn async_cleanup(&mut self, 
                      _handle:&AsyncTaskHandle, 
                      _task_data:&mut Self::AsyncTaskData, 
-                     _ti:TypeInstanceObject) -> ServletFuncResult 
+                     _ti:()) -> ServletFuncResult 
     {
         return fail();
     }
@@ -57,6 +60,43 @@ impl AsyncServlet for Unimplemented {
         return fail();
     }
 }
+
+struct SyncServletObject<BT:Bootstrap> {
+    protocol_model : Rc<<BT::SyncServletType as SyncServlet>::ProtocolType>,
+    servlet_context: BT::SyncServletType
+}
+
+struct AsyncServletObject<BT:Bootstrap> {
+    protocol_model : Rc<<BT::AsyncServletType as AsyncServlet>::ProtocolType>,
+    servlet_context: BT::AsyncServletType
+}
+
+enum ServletObject<BT:Bootstrap> {
+    SYNC(SyncServletObject<BT>),
+    ASYNC(AsyncServletObject<BT>)
+}
+
+fn create_servlet_object<BT:Bootstrap>(bs_result:ServletMode<BT::AsyncServletType, BT::SyncServletType>, 
+                                       type_model_obj: TypeModelObject) -> ServletObject<BT>
+{
+    match bs_result {
+        ServletMode::SyncMode(servlet) => {
+            let protocol_model = <BT::SyncServletType as SyncServlet>::ProtocolType::new_protocol_model(type_model_obj);
+            return ServletObject::SYNC(SyncServletObject {
+                protocol_model : Rc::new(protocol_model),
+                servlet_context: servlet
+            });
+        },
+        ServletMode::AsyncMode(servlet) => {
+            let protocol_model = <BT::AsyncServletType as AsyncServlet>::ProtocolType::new_protocol_model(type_model_obj);
+            return ServletObject::ASYNC(AsyncServletObject {
+                protocol_model : Rc::new(protocol_model),
+                servlet_context: servlet
+            });
+        }
+    }
+}
+
 
 unsafe fn make_argument_list<'a>(argc: u32, argv: *const *const c_char) -> Option<Vec<&'a str>>
 {
@@ -91,14 +131,14 @@ unsafe fn dispose<T>(ptr : *mut c_void)
     Box::from_raw(ptr as *mut T);
 }
 
-unsafe fn unpack_servlet_object<'a, BT:Bootstrap>(obj_ptr : *mut c_void) -> &'a mut ServletMode<BT::AsyncServletType, BT::SyncServletType>
+unsafe fn unpack_servlet_object<'a, BT:Bootstrap>(obj_ptr : *mut c_void) -> &'a mut ServletObject<BT>
 {
     unpack(obj_ptr)
 }
 
 unsafe fn dispose_servlet_object<BT:Bootstrap>(obj_ptr : *mut c_void) 
 {
-    dispose::<ServletMode<BT::AsyncServletType, BT::SyncServletType>>(obj_ptr);
+    dispose::<ServletObject<BT>>(obj_ptr);
 }
 
 unsafe fn unpack_async_handle<'a>(handle_ptr : *mut c_void) -> &'a AsyncTaskHandle 
@@ -130,22 +170,22 @@ unsafe fn dispose_async_task_data<BT:Bootstrap>(obj_ptr : *mut c_void)
  *
  * * `argc`: The number of servlet initailization arguments
  * * `argv`: The list of servlet initialization arguments
+ * * `type_model_ptr`: The pointer points to the actual type model allocated by the loader
  *
  * Returns a raw pointer to the actual servlet object
  **/
-pub unsafe fn call_bootstrap_obj<T:Bootstrap>(argc: u32, argv: *const *const c_char) -> *mut c_void
+pub unsafe fn call_bootstrap_obj<T:Bootstrap>(argc: u32, argv: *const *const c_char, type_model_ptr:*mut c_void) -> *mut c_void
 {
-    if let Some(args) = make_argument_list(argc, argv)
+    if let Some(type_model) = TypeModelObject::from_raw(type_model_ptr as *mut c_void) 
     {
-        if let Ok(servlet_mode) = T::get(&args[0..]) 
+        if let Some(args) = make_argument_list(argc, argv)
         {
-            let result_obj = Box::new(servlet_mode);
+            if let Ok(servlet_mode) = T::get(&args[0..]) 
+            {
+                let result_obj = Box::new(create_servlet_object::<T>(servlet_mode, type_model));
 
-            return Box::into_raw(result_obj) as *mut c_void;
-        }
-        else
-        {
-            return null::<c_void>() as *mut c_void;
+                return Box::into_raw(result_obj) as *mut c_void;
+            }
         }
     }
     return null::<c_void>() as *mut c_void;
@@ -165,24 +205,28 @@ pub unsafe fn call_bootstrap_obj<T:Bootstrap>(argc: u32, argv: *const *const c_c
  *
  * Returns the servlet initialization result follows the Plumber convention
  **/
-pub fn invoke_servlet_init<BT:Bootstrap>(obj_ptr : *mut c_void, argc: u32, argv: *const *const c_char, tm_ptr : *mut c_void) -> i32 
+pub fn invoke_servlet_init<BT:Bootstrap>(obj_ptr : *mut c_void, argc: u32, argv: *const *const c_char) -> i32 
 {
-    let tm_obj = if let Some(obj) = TypeModelObject::from_raw(tm_ptr as *mut c_void) { obj } else { return -1; };
-
     if let Some(args) = unsafe{ make_argument_list(argc, argv) }
     {
         match unsafe { unpack_servlet_object::<BT>(obj_ptr) } 
         {
-            ServletMode::SyncMode(ref mut servlet) => {
-                if let Ok(_) = servlet.init(&args[0..], tm_obj) 
+            ServletObject::SYNC(ref mut servlet) => {
+                if let Some(pm_ref) = Rc::get_mut(&mut servlet.protocol_model)
                 {
-                    return 0;
+                    if let Ok(_) = servlet.servlet_context.init(&args[0..], pm_ref) 
+                    {
+                        return 0;
+                    }
                 }
             },
-            ServletMode::AsyncMode(ref mut servlet) => {
-                if let Ok(_) = servlet.init(&args[0..], tm_obj)
+            ServletObject::ASYNC(ref mut servlet) => {
+                if let Some(pm_ref) = Rc::get_mut(&mut servlet.protocol_model)
                 {
-                    return 1;
+                    if let Ok(_) = servlet.servlet_context.init(&args[0..], pm_ref)
+                    {
+                        return 1;
+                    }
                 }
             }
         }
@@ -207,9 +251,10 @@ pub fn invoke_servlet_sync_exec<BT:Bootstrap>(obj_ptr : *mut c_void, type_inst :
 {
     if let Some(type_inst_obj) = TypeInstanceObject::from_raw(type_inst)
     {
-        if let ServletMode::SyncMode(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) } 
+        if let ServletObject::SYNC(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) } 
         {
-            if let Ok(_) = servlet.exec(type_inst_obj)
+            let accessor = <BT::SyncServletType as SyncServlet>::DataModelType::new_data_model(Rc::clone(&servlet.protocol_model), type_inst_obj);
+            if let Ok(_) = servlet.servlet_context.exec(accessor)
             {
                 return 0;
             }
@@ -232,11 +277,19 @@ pub fn invoke_servlet_sync_exec<BT:Bootstrap>(obj_ptr : *mut c_void, type_inst :
 pub fn invoke_servlet_cleanup<BT:Bootstrap>(obj_ptr : *mut c_void) -> i32
 {
     let mut ret = -1;
-    if let ServletMode::SyncMode(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) } 
+    match unsafe { unpack_servlet_object::<BT>(obj_ptr) } 
     {
-        if let Ok(_) = servlet.cleanup()
-        {
-            ret = 0;
+        ServletObject::SYNC(ref mut servlet) => {
+            if let Ok(_) = servlet.servlet_context.cleanup()
+            {
+                ret = 0;
+            }
+        },
+        ServletObject::ASYNC(ref mut servlet) => {
+            if let Ok(_) = servlet.servlet_context.cleanup()
+            {
+                ret = 0;
+            }
         }
     }
 
@@ -265,11 +318,13 @@ pub fn invoke_servlet_async_init<BT:Bootstrap>(obj_ptr : *mut c_void, handle_ptr
 {
     if let Some(type_inst_obj) = TypeInstanceObject::from_raw(type_inst)
     {
-        if let ServletMode::AsyncMode(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) }
+        if let ServletObject::ASYNC(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) }
         {
             let handle = unsafe{unpack_async_handle(handle_ptr)};
+            
+            let accessor = <BT::AsyncServletType as AsyncServlet>::DataModelType::new_data_model(Rc::clone(&servlet.protocol_model), type_inst_obj);
 
-            if let Some(task_data) = servlet.async_init(handle, type_inst_obj)
+            if let Some(task_data) = servlet.servlet_context.async_init(handle, accessor)
             {
                 return Box::into_raw(task_data) as *mut c_void;
             }
@@ -324,12 +379,13 @@ pub fn invoke_servlet_async_cleanup<BT:Bootstrap>(obj_ptr : *mut c_void, handle_
 {
     if let Some(type_inst_obj) = TypeInstanceObject::from_raw(type_inst)
     {
-        if let ServletMode::AsyncMode(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) }
+        if let ServletObject::ASYNC(ref mut servlet) = unsafe { unpack_servlet_object::<BT>(obj_ptr) }
         {
             let handle = unsafe{ unpack_async_handle(handle_ptr) };
             let task_data = unsafe { unpack_async_task_data::<BT>(task_data_ptr) };
+            let accessor = <BT::AsyncServletType as AsyncServlet>::DataModelType::new_data_model(Rc::clone(&servlet.protocol_model), type_inst_obj);
 
-            if let Ok(_) = servlet.async_cleanup(handle, task_data, type_inst_obj)
+            if let Ok(_) = servlet.servlet_context.async_cleanup(handle, task_data, accessor)
             {
                 return 0;
             }

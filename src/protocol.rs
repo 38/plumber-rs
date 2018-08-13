@@ -329,27 +329,22 @@ primitive_type!{
     f64  => [type_size:8; is_numeric:1; is_signed:1; is_float:1; is_primitive_token:0; is_compound:0];
 }
 
-pub trait DataModel where Self:Sized {
-    type ModelType : ProtocolModel;
-    fn new(model : Rc<Self::ModelType>, type_inst:TypeInstanceObject) -> Option<Self>;
+pub trait DataModel<T:ProtocolModel> where Self:Sized {
+    fn new_data_model(model : Rc<T>, type_inst:TypeInstanceObject) -> Self;
 }
 
 pub trait ProtocolModel {
-    fn init_model(&mut self, type_model:&mut TypeModelObject, pipes: HashMap<String, PipeDescriptor>) -> bool;
-    fn new() -> Self;
+    fn init_model(&mut self, pipes: HashMap<String, PipeDescriptor>) -> bool;
+    fn new_protocol_model(type_model:TypeModelObject) -> Self;
 }
 
 impl ProtocolModel for () {
-    fn init_model(&mut self, _tm:&mut TypeModelObject, _p:HashMap<String, PipeDescriptor>) -> bool { false }
-    fn new() {}
+    fn init_model(&mut self, _p:HashMap<String, PipeDescriptor>) -> bool { true }
+    fn new_protocol_model(_tm:TypeModelObject) {}
 }
 
-impl DataModel for () {
-    type ModelType = ();
-    fn new<'a>(_m : Rc<()>, _ti: TypeInstanceObject) -> Option<()>
-    {
-        None
-    }
+impl DataModel<()> for () {
+    fn new_data_model(_m : Rc<()>, _ti: TypeInstanceObject) {}
 }
 
 pub type Untyped = ();
@@ -367,17 +362,17 @@ macro_rules! protodef {
             use ::plumber_rs::pipe::PipeDescriptor;
             use ::std::collections::HashMap;
             pub struct $proto_name {
+                type_model : TypeModelObject,
                 $(pub $model_name : Primitive<$type>,)*
             }
             impl ProtocolModel for $proto_name {
                 fn init_model(&mut self, 
-                              obj:&mut TypeModelObject, 
                               pipes: HashMap<String, PipeDescriptor>) -> bool 
                 {
                     $(
                         if let Some(pipe) = pipes.get(stringify!($pipe))
                         {
-                            if !obj.assign_primitive(*pipe, stringify!($($field)*), &mut self.$model_name, true)
+                            if !self.type_model.assign_primitive(*pipe, stringify!($($field)*), &mut self.$model_name, true)
                             {
                                 return false;
                             }
@@ -389,9 +384,10 @@ macro_rules! protodef {
                     )*
                     return true;
                 }
-                fn new() -> Self
+                fn new_protocol_model(type_model : TypeModelObject) -> Self
                 {
                     return $proto_name {
+                        type_model : type_model,
                         $(
                             $model_name : Primitive::new()
                         ),*
@@ -413,8 +409,7 @@ macro_rules! protodef {
             }
 
             impl <'a, T: PrimitiveTypeTag<T> + Default> FieldAccessor<'a, T> {
-                #[allow(dead_code)]
-                fn get(&mut self) -> Option<T>
+                pub fn get(&mut self) -> Option<T>
                 {
                     return self.target.get(self.inst);
                 }
@@ -435,14 +430,13 @@ macro_rules! protodef {
                 )*
             }
 
-            impl DataModel for $proto_name {
-                type ModelType = ::plumber_protocol::$proto_name;
-                fn new(model : Rc<Self::ModelType>, type_inst:TypeInstanceObject) -> Option<$proto_name>
+            impl DataModel<::plumber_protocol::$proto_name> for $proto_name {
+                fn new_data_model(model : Rc<::plumber_protocol::$proto_name>, type_inst:TypeInstanceObject) -> $proto_name
                 {
-                    return Some($proto_name{
+                    return $proto_name{
                         model : model,
                         inst  : type_inst
-                    });
+                    };
                 }
             }
         }

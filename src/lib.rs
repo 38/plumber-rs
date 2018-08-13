@@ -84,22 +84,22 @@ macro_rules! export_bootstrap {
         #[allow(dead_code)]
         #[no_mangle]
         pub extern "C" fn _rs_invoke_bootstrap(argc: u32, 
-                                               argv: *const *const ::std::os::raw::c_char, 
+                                               argv: *const *const ::std::os::raw::c_char,
+                                               tm_ptr: *mut ::std::os::raw::c_void,
                                                address_table : *const ::plumber_rs::ApiAddressTable, 
                                                va_helper : ::plumber_rs::VariadicWrapperFunc) -> *mut ::std::os::raw::c_void 
         {
             ::plumber_rs::assign_address_table(address_table, va_helper);
-            return unsafe{ ::plumber_rs::rust_servlet::call_bootstrap_obj::<$bs>(argc, argv) };
+            return unsafe{ ::plumber_rs::rust_servlet::call_bootstrap_obj::<$bs>(argc, argv, tm_ptr) };
         }
 
         #[allow(dead_code)]
         #[no_mangle]
         pub extern "C" fn _rs_invoke_init(obj_ptr    : *mut ::std::os::raw::c_void, 
                                           argc       : u32, 
-                                          argv       : *const *const ::std::os::raw::c_char, 
-                                          type_model : *mut ::std::os::raw::c_void) -> i32 
+                                          argv       : *const *const ::std::os::raw::c_char) -> i32 
         {
-            ::plumber_rs::rust_servlet::invoke_servlet_init::<$bs>(obj_ptr, argc, argv, type_model)
+            ::plumber_rs::rust_servlet::invoke_servlet_init::<$bs>(obj_ptr, argc, argv)
         }
 
         #[allow(dead_code)]
