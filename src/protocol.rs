@@ -23,6 +23,7 @@ use ::plumber_api_call::get_cstr;
 
 use std::marker::PhantomData;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 /**
  * Type type instance object. For each time the Plumber framework activate the execution of the
@@ -328,31 +329,30 @@ primitive_type!{
     f64  => [type_size:8; is_numeric:1; is_signed:1; is_float:1; is_primitive_token:0; is_compound:0];
 }
 
-pub trait ModelAccessor<'a> where Self:Sized {
-    type ModelType : Model;
-    fn new(model : &'a Self::ModelType, type_inst:&'a mut TypeInstanceObject) -> Option<Self>;
+pub trait DataModel where Self:Sized {
+    type ModelType : ProtocolModel;
+    fn new(model : Rc<Self::ModelType>, type_inst:TypeInstanceObject) -> Option<Self>;
 }
 
-pub trait Model {
+pub trait ProtocolModel {
     fn init_model(&mut self, type_model:&mut TypeModelObject, pipes: HashMap<String, PipeDescriptor>) -> bool;
     fn new() -> Self;
 }
 
-impl Model for () {
+impl ProtocolModel for () {
     fn init_model(&mut self, _tm:&mut TypeModelObject, _p:HashMap<String, PipeDescriptor>) -> bool { false }
     fn new() {}
 }
 
-impl <'a> ModelAccessor<'a> for () {
+impl DataModel for () {
     type ModelType = ();
-    fn new(_m : &'a (), _ti: &'a mut TypeInstanceObject) -> Option<()>
+    fn new<'a>(_m : Rc<()>, _ti: TypeInstanceObject) -> Option<()>
     {
         None
     }
 }
 
-#[allow(dead_code)]
-type Untyped = ();
+pub type Untyped = ();
 
 // TODO: how to handle the writer ?
 //
@@ -363,13 +363,13 @@ type Untyped = ();
 macro_rules! protodef {
     (protodef $proto_name:ident { $([$pipe:ident.$($field:tt)*]:$type:ty => $model_name:ident;)* } ) => {
         mod plumber_protocol {
-            use ::plumber_rs::protocol::{Primitive, TypeModelObject, Model};
+            use ::plumber_rs::protocol::{Primitive, TypeModelObject, ProtocolModel};
             use ::plumber_rs::pipe::PipeDescriptor;
             use ::std::collections::HashMap;
             pub struct $proto_name {
                 $(pub $model_name : Primitive<$type>,)*
             }
-            impl Model for $proto_name {
+            impl ProtocolModel for $proto_name {
                 fn init_model(&mut self, 
                               obj:&mut TypeModelObject, 
                               pipes: HashMap<String, PipeDescriptor>) -> bool 
@@ -400,10 +400,11 @@ macro_rules! protodef {
             }
         }
         mod plumber_protocol_accessor {
-            use ::plumber_rs::protocol::{ModelAccessor, TypeInstanceObject, PrimitiveTypeTag, Primitive};
-            pub struct $proto_name<'a> {
-                model : &'a ::plumber_protocol::$proto_name,
-                inst  : &'a mut TypeInstanceObject
+            use ::plumber_rs::protocol::{DataModel, TypeInstanceObject, PrimitiveTypeTag, Primitive};
+            use std::rc::Rc;
+            pub struct $proto_name {
+                model : Rc<::plumber_protocol::$proto_name>,
+                inst  : TypeInstanceObject
             }
 
             pub struct FieldAccessor<'a, T: PrimitiveTypeTag<T> + Default + 'a> {
@@ -421,22 +422,22 @@ macro_rules! protodef {
                 // TODO: implement the set
             }
 
-            impl <'a> $proto_name<'a> {
+            impl $proto_name {
                 $(
                     #[allow(dead_code)]
                     pub fn $model_name(&mut self) -> FieldAccessor<$type>
                     {
                         return FieldAccessor::<$type>{
                             target: &self.model.$model_name,
-                            inst  : self.inst
+                            inst  : &mut self.inst
                         };
                     }
                 )*
             }
 
-            impl <'a> ModelAccessor<'a> for $proto_name<'a> {
+            impl DataModel for $proto_name {
                 type ModelType = ::plumber_protocol::$proto_name;
-                fn new(model : &'a Self::ModelType, type_inst:&'a mut TypeInstanceObject) -> Option<$proto_name<'a>>
+                fn new(model : Rc<Self::ModelType>, type_inst:TypeInstanceObject) -> Option<$proto_name>
                 {
                     return Some($proto_name{
                         model : model,

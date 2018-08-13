@@ -8,7 +8,7 @@
 //! To create a Plumber servlet with rust, `Bootstrap` trait must be implemented by some type and
 //! this type should be used in `export_bootstrap!` macro.
 
-use ::protocol::{TypeModelObject, TypeInstanceObject};
+use ::protocol::{TypeModelObject, TypeInstanceObject, ProtocolModel, DataModel};
 
 /**
  * The servlet function call result
@@ -53,6 +53,11 @@ pub struct Unimplemented {}
  * reduces the system throughput. 
  **/
 pub trait SyncServlet {
+
+    type ProtocolType : ProtocolModel;
+
+    type DataModelType: DataModel;
+
     /**
      * The initialization function. 
      *

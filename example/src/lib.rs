@@ -26,6 +26,9 @@ struct Servlet {
 }
 
 impl SyncServlet for Servlet {
+    type ProtocolType   = ::plumber_protocol::Test;
+    type DataModelType  = ::plumber_protocol_accessor::Test;
+
     fn init(&mut self, _args:&[&str], mut _tmo : TypeModelObject) -> ServletFuncResult 
     {
         plumber_log!(W  "This is a test {:?}", _args);

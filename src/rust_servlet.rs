@@ -7,9 +7,11 @@ use std::os::raw::{c_char, c_void};
 use std::ffi::CStr;
 use std::ptr::null;
 use ::servlet::{Unimplemented, AsyncServlet, SyncServlet, ServletMode, ServletFuncResult, Bootstrap, AsyncTaskHandle, fail};
-use ::protocol::{TypeModelObject, TypeInstanceObject};
+use ::protocol::{TypeModelObject, TypeInstanceObject, Untyped};
 
 impl SyncServlet for Unimplemented {
+    type ProtocolType = Untyped;
+    type DataModelType = Untyped;
     fn init(&mut self, _args:&[&str], 
             _type_inst:TypeModelObject) -> ServletFuncResult 
     {
