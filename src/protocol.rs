@@ -351,6 +351,7 @@ impl <'a> ModelAccessor<'a> for () {
     }
 }
 
+#[allow(dead_code)]
 type Untyped = ();
 
 // TODO: how to handle the writer ?

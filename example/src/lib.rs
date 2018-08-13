@@ -1,27 +1,43 @@
 #[macro_use]
 extern crate plumber_rs;
 
-use plumber_rs::*;
 use plumber_rs::servlet::{SyncServlet, ServletFuncResult, Bootstrap, Unimplemented, ServletMode};
 use plumber_rs::pipe::{Pipe, PIPE_INPUT, PIPE_OUTPUT, PIPE_PERSIST};
 use plumber_rs::protocol::{TypeModelObject, TypeInstanceObject};
 
 use std::io::Write;
 
-use std::io::{BufRead};
+use std::io::BufRead;
+
+//use std::collections::HashMap;
+
+protodef! {
+    protodef Test {
+        [input.position.x]:f32 => position_x;
+        [output.distance]:f32  => distance;
+    }
+}
 
 #[allow(dead_code)]
 struct Servlet {
     input : Pipe<i32>,
-    output: Pipe<()>
+    output: Pipe<()>//,
+    //model: Option<::plumber_protocol::Test>
 }
 
 impl SyncServlet for Servlet {
-    fn init(&mut self, _args:&[&str], _tmo : TypeModelObject) -> ServletFuncResult 
+    fn init(&mut self, _args:&[&str], mut _tmo : TypeModelObject) -> ServletFuncResult 
     {
         plumber_log!(W  "This is a test {:?}", _args);
         //use plumber_rs::pstd::pstd_type_model_new;
         //plumber_log!(W  "Type model {:?}", unsafe{pstd_type_model_new()});
+        /*
+        let mut new_val = Some(::plumber_protocol::Test::new());
+        ::std::mem::swap(&mut new_val, &mut self.model);
+        let mut hash = HashMap::<String, ::plumber_rs::pipe::PipeDescriptor>::new();
+        hash.insert("input".to_string(), self.input.as_descriptor());
+        hash.insert("output".to_string(), self.output.as_descriptor());
+        self.model.as_mut().unwrap().init_model(&mut _tmo, hash);*/
         return Ok(());
     }
     fn exec(&mut self, _ti : TypeInstanceObject) -> ServletFuncResult 
@@ -80,6 +96,7 @@ impl Bootstrap for BootstrapType {
                 return Ok(ServletMode::SyncMode(Servlet{
                     input : input,
                     output: output
+                    //model: None
                 }));
             }
         }
