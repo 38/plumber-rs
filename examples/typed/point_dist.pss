@@ -7,5 +7,6 @@ import("service");
 Service.start({
 	input:= "typing/conversion/json --from-json --raw output:graphics/Point2D";
 	node := "language/rust target/debug/libdist.so";
-	() -> "json" input "output" ->  "input" node "output" -> ();
+	output := "typing/conversion/json --to-json --raw input:float";
+	() -> "json" input "output" ->  "input" node "output" -> "input" output "json" -> ();
 });

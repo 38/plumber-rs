@@ -5,12 +5,13 @@ use plumber_rs::servlet::{SyncServlet, ServletFuncResult, Bootstrap, BootstrapRe
 use plumber_rs::pipe::{Pipe, PIPE_INPUT, PIPE_OUTPUT};
 use plumber_rs::protocol::ProtocolModel;
 
-use std::io::Write;
+//use std::io::Write;
 
 protodef! {
     protodef Point {
         [input.x] : f32 => x_coord;
         [input.y] : f32 => y_coord;
+        [output.value] : f32 => distance;
     }
 }
 
@@ -27,7 +28,8 @@ impl SyncServlet for Servlet {
     {
         init_protocol!{
             model {
-                self.input => input
+                self.input => input,
+                self.output => output
             }
         }
         return success();
@@ -38,7 +40,7 @@ impl SyncServlet for Servlet {
         {
             if let Some(y) = model.y_coord().get()
             {
-                writeln!(self.output, "The distance from (0,0) to ({},{}) is {}", x, y, (x*x + y*y).sqrt());
+                model.distance().set((x*x + y*y).sqrt());
                 return success();
             }
         }
@@ -56,7 +58,7 @@ impl Bootstrap for BootstrapType {
     {
         if let Some(input) = Pipe::define("input", PIPE_INPUT, Some("graphics/Point2D"))
         {
-            if let Some(output) = Pipe::define("output", PIPE_OUTPUT, None)
+            if let Some(output) = Pipe::define("output", PIPE_OUTPUT, Some("float"))
             {
                 return Self::sync(Servlet{
                     input : input,

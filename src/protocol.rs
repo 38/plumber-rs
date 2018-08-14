@@ -16,7 +16,8 @@ use ::pstd::{
     pstd_type_model_get_accessor,
     pstd_type_model_get_field_info,
     pstd_type_model_on_pipe_type_checked,
-    pstd_type_instance_read
+    pstd_type_instance_read,
+    pstd_type_instance_write
 };
 
 use ::plumber_api_call::get_cstr;
@@ -77,6 +78,27 @@ impl TypeInstanceObject {
         let result = unsafe{ pstd_type_instance_read(self.object, acc, buf, size) };
 
         return result == size;
+    }
+
+    /**
+     * Write an accessor data from given type instance object.
+     * 
+     * This is the low level write function of Plumber's pstd lib
+     *
+     * * `acc`: The accessor to write
+     * * `buf`: The data buffer 
+     * * `size`: The number of bytes that needs to be written
+     *
+     * Returns if the operation has successfully done
+     **/
+    fn write(&mut self,
+             acc:pstd_type_accessor_t,
+             buf:*const ::std::os::raw::c_void,
+             size:usize) -> bool
+    {
+        let result = unsafe{ pstd_type_instance_write(self.object, acc, buf, size) };
+
+        return result != -1;
     }
 }
 
@@ -295,7 +317,32 @@ impl <T : PrimitiveTypeTag<T> + Default> Primitive<T> {
         return None;
     }
 
-    /* TODO: we need to write the primitvie as well */
+    /**
+     * Write a primitive to the primitive descriptor within current task context
+     *
+     * This function will be valid only when it's called from the execution function, because it
+     * requires the task context.
+     *
+     * * `type_inst`: The type instance object where we want to write to
+     *
+     * Return the operation result, if the operation has successuflly  done.
+     **/
+    pub fn set(&self, type_inst:&mut TypeInstanceObject, val:T) -> bool
+    {
+        if let Some(ref acc_ref) = self.accessor
+        {
+            let acc = acc_ref.clone();
+            let val_ref = &val;
+            let val_ptr = val_ref as *const T;
+
+            if type_inst.write(acc, val_ptr as *mut ::std::os::raw::c_void, ::std::mem::size_of::<T>())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
 
 /**
@@ -546,7 +593,10 @@ macro_rules! protodef {
                     return self.target.get(self.inst);
                 }
 
-                // TODO: implement the set
+                pub fn set(&mut self, val:T) -> bool 
+                {
+                    return self.target.set(self.inst, val);
+                }
             }
 
             $(
