@@ -36,12 +36,13 @@ In Rust, a servlet is actually a trait. For the sync servlet, we can implemnet t
 
 ```rust
 use plumber_rs::servlet::{SyncServlet, Unimplemented, ServletMode, ServletFuncResult, Bootstrap};
-use plumber_rs::protocol::{TypeModelObject, TypeInstanceObject};
+use plumber_rs::protocol::{ProtocolModel, Untyped};
 
 struct HelloServlet {}
 
 impl SyncServlet for HelloServlet {
-    fn init(&mut self, _args:&[&str], _tm:TypeModelObject) -> ServletFuncResult 
+    no_protocol!();
+    fn init(&mut self, _args:&[&str], _model:&mut Self::ProtocolType) -> ServletFuncResult 
     {
         plumber_log!(N "Hello World");
         return Ok(());
@@ -90,17 +91,18 @@ extern crate plumber_rs;
 extern crate libc;
 
 use plumber_rs::servlet::{SyncServlet, Unimplemented, ServletMode, ServletFuncResult, Bootstrap};
-use plumber_rs::protocol::{TypeModelObject, TypeInstanceObject};
+use plumber_rs::protocol::{ProtocolModel, Untyped};
 
 struct HelloServlet {}
 
 impl SyncServlet for HelloServlet {
-    fn init(&mut self, _args:&[&str], _tm:TypeModelObject) -> ServletFuncResult 
+    no_protocol!();
+    fn init(&mut self, _args:&[&str], _model:&mut Self::ProtocolType) -> ServletFuncResult 
     {
         plumber_log!(N "Hello World");
         return Ok(());
     }
-    fn exec(&mut self, _ti:TypeInstanceObject) -> ServletFuncResult  { Ok(()) }
+    fn exec(&mut self, _model:Self::DataModelType) -> ServletFuncResult  { Ok(()) }
     fn cleanup(&mut self) -> ServletFuncResult { Ok(()) }
 }
 
