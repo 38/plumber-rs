@@ -5,6 +5,6 @@ insmod("tcp_pipe 12345");
 import("service");
 
 Service.start({
-	node := "language/rust target/debug/libservlet.so";
+	node := "language/rust target/debug/libecho.so";
 	() -> "input" node "output" -> ();
 });

@@ -1,0 +1,11 @@
+insmod("pssm");
+insmod("mem_pipe");
+insmod("text_file input=/dev/stdin output=/dev/stdout label=stdio");
+
+import("service");
+
+Service.start({
+	input:= "typing/conversion/json --from-json --raw output:graphics/Point2D";
+	node := "language/rust target/debug/libdist.so";
+	() -> "json" input "output" ->  "input" node "output" -> ();
+});

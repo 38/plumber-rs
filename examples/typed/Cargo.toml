@@ -1,11 +1,10 @@
 [package]
-name = "example"
+name = "dist"
 version = "0.1.0"
 authors = ["Hao Hou <haohou@gmail.com>"]
 
 [lib]
-name = "servlet"
 crate-type= ["cdylib"]
 
 [dependencies]
-plumber-rs = {path = ".."}
+plumber-rs = {path = "../../"}

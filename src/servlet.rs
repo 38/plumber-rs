@@ -53,7 +53,11 @@ pub struct Unimplemented {}
  * reduces the system throughput. 
  **/
 pub trait SyncServlet {
-
+    /**
+     * The type used to represent the protocol. 
+     *
+     * This protocol type is ususally build by the macro `protodef!`. 
+     **/
     type ProtocolType : ProtocolModel;
 
     type DataModelType: DataModel<Self::ProtocolType>;

@@ -3,51 +3,29 @@ extern crate plumber_rs;
 
 use plumber_rs::servlet::{SyncServlet, ServletFuncResult, Bootstrap, Unimplemented, ServletMode};
 use plumber_rs::pipe::{Pipe, PIPE_INPUT, PIPE_OUTPUT, PIPE_PERSIST};
-//use plumber_rs::protocol::ProtocolModel;
 
-use std::io::Write;
+use std::io::{BufRead, Write};
 
-use std::io::BufRead;
-
-/*use std::collections::HashMap;*/
-/*
-protodef! {
-    protodef Test {
-        [input.x]:f32 => position_x;
-        [input.y]:f32 => position_y;
-    }
-}*/
-
-#[allow(dead_code)]
 struct Servlet {
     input : Pipe<i32>,
-    output: Pipe<()>//,
-    //model: Option<::plumber_protocol::Test>
+    output: Pipe<()>
 }
 
 impl SyncServlet for Servlet {
-    type ProtocolType   = ::plumber_protocol::Test;
-    type DataModelType  = ::plumber_protocol_accessor::Test;
+
+    no_protocol!();
 
     fn init(&mut self, _args:&[&str], mut _tmo : &mut Self::ProtocolType) -> ServletFuncResult 
     {
-        plumber_log!(W  "This is a test {:?}", _args);
-        /*let mut hash = HashMap::<String, ::plumber_rs::pipe::PipeDescriptor>::new();
-        hash.insert("input".to_string(), self.input.as_descriptor());
-        hash.insert("output".to_string(), self.output.as_descriptor());
-        _tmo.init_model(hash);*/
+        plumber_log!(I  "The Rust Servlet has been started with param {:?}", _args);
         return Ok(());
     }
     fn exec(&mut self, mut _ti : Self::DataModelType) -> ServletFuncResult 
     { 
         let mut reader = self.input.as_bufreader();
         let mut line = String::new();
-
         let state = self.input.get_state();
-
         let mut new_state = Box::new(*state.unwrap_or(&0));
-
-        //plumber_log!(F "x = {:?} y = {:?}", _ti.position_x().get(), _ti.position_y().get());
 
         while let Ok(size) = reader.read_line(&mut line)
         {
@@ -89,14 +67,13 @@ impl Bootstrap for BootstrapType {
     type AsyncServletType = Unimplemented;
     fn get(_args:&[&str]) -> Result<ServletMode<Unimplemented, Servlet>, ()>
     {
-        if let Some(input) = Pipe::define("input", PIPE_INPUT, /*Some("graphics/Point2D")*/ None)
+        if let Some(input) = Pipe::define("input", PIPE_INPUT, None)
         {
             if let Some(output) = Pipe::define("output", PIPE_OUTPUT, None)
             {
                 return Ok(ServletMode::SyncMode(Servlet{
                     input : input,
                     output: output
-                    //model: None
                 }));
             }
         }

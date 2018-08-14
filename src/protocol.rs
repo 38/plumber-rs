@@ -268,6 +268,16 @@ impl <T : PrimitiveTypeTag<T> + Default> Primitive<T> {
         };
     }
 
+    /**
+     * Get a primitive value from the primitive descriptor. 
+     *
+     * This function will be valid only when it's called from execution function and there's
+     * type instance object has been created. Otherwise it will returns a failure
+     *
+     * * `type_inst`: Type instance object where we read the primitive from
+     * 
+     * Return the read result, None indicates we are unable to read the data
+     **/
     pub fn get(&self, type_inst:&mut TypeInstanceObject) -> Option<T>
     {
         if let Some(ref acc_ref) = self.accessor
@@ -329,38 +339,160 @@ primitive_type!{
     f64  => [type_size:8; is_numeric:1; is_signed:1; is_float:1; is_primitive_token:0; is_compound:0];
 }
 
+/**
+ * The trait of the data models, which is used to read/write the typed data from/input Plumber
+ * pipe port.
+ *
+ * A data model is created when the exec function have created the type instance object and
+ * bufferred the typed data into the type instance object. This is the Rust wrapper for the type
+ * instance object from libpstd.
+ *
+ * This trait is usually implemented by the macro `protodef!`. 
+ * It's rare that you have to manually implement the data model class. 
+ * See the documentaiton for `protodef!` macro for details.
+ **/
 pub trait DataModel<T:ProtocolModel> where Self:Sized {
+    /**
+     * Create the new data type model
+     *
+     * * `model`: The smart pointer for the data model
+     * * `type_inst`: The data instance object created for current task
+     *
+     * Returns the newly created data model object
+     **/
     fn new_data_model(model : Rc<T>, type_inst:TypeInstanceObject) -> Self;
 }
 
+/**
+ * The trait for the protocol model, which defines what field we want to read/write to the typed
+ * Plumber pipe port.
+ *
+ * This is the high-level Rust wrapper for the PSTD's type model object, which keep tracking the
+ * memory layout of the typed port and memorize the method that we can use to interept the typed
+ * data. See the Plumber documentaiton of pstd_type_model_t for the details.
+ *
+ * This trait is usually implemented by the macro `protodef!`. 
+ * It's rare that you have to manually implement the data model class. 
+ * See the documentaiton for `protodef!` macro for details.
+ **/
 pub trait ProtocolModel {
+    /**
+     * Initialize the model, which assign the actual pipe to the model's pipe.
+     *
+     * This function is desgined to be called in the servlet's init function and it actually does
+     * some initialization, such as requires a accessor from the lower level pstd_type_model_t
+     * object, etc.
+     *
+     * * `pipes`: A map that contains the map from the pipe name to pipe descriptor
+     *
+     * Returns if or not this model has been successfully initialized
+     **/
     fn init_model(&mut self, pipes: HashMap<String, PipeDescriptor>) -> bool;
+
+    /**
+     * Create a new protocol model, which is the high-level wrapper of the Type Model object
+     *
+     * * `type_model`: The low-level type model object
+     *
+     * Return the newly created type model object
+     **/
     fn new_protocol_model(type_model:TypeModelObject) -> Self;
 }
 
+/**
+ * The placeholder for the data model and protocol model of a totally untyped servlet.
+ *
+ * If all the pipes ports of your servlet are untyped, this is the type you should put into the
+ * `ProtocolType` and `DataModelType`.
+ **/
+pub type Untyped = ();
+
 impl ProtocolModel for () {
     fn init_model(&mut self, _p:HashMap<String, PipeDescriptor>) -> bool { true }
-    fn new_protocol_model(_tm:TypeModelObject) {}
+    fn new_protocol_model(_tm:TypeModelObject) -> Untyped {}
 }
 
-impl DataModel<()> for () {
-    fn new_data_model(_m : Rc<()>, _ti: TypeInstanceObject) {}
+impl DataModel<Untyped> for Untyped {
+    fn new_data_model(_m : Rc<Untyped>, _ti: TypeInstanceObject) -> Untyped {}
 }
-
-pub type Untyped = ();
 
 // TODO: how to handle the writer ?
 //
 // Also we need to handle the token type 
 //
 // Another thing is constant support
+/**
+ * Defines a language-neutural protocol binding for the Rust servlet.
+ *
+ * This is the major way a `ProtocolModel` and `DataModel` is created. The input of the macro is
+ * which field of the language-neutural type you want to map into the Rust servlet.
+ *
+ * For example, a servlet may want to read a `Point2D` type from the input port. And the servlet
+ * uses the `Point2D.x` and `Point2D.y`, we can actually map it with the following syntax:
+ *
+ * ```
+ * protodef!{
+ *    protodef MyProtocol {
+ *      [input.x]:f32 => input_x;
+ *      [input.y]:f32 => input_y;
+ *    }
+ * }
+ * ```
+ * Which means we want to map the the `x` field of the input with `f32` type to identifer `input_x`
+ * and `y` field of the input with `f32` type to identifer `input_y`.
+ *
+ * In the init function of the servlet, we should assign the actual pipe object to the protocol
+ * pipes with the macro `init_protocol`. For example:
+ *
+ * ```
+ * fn init(&mut self, args:&[&str], model:Self::ProtocolType) 
+ * {
+ *      ....
+ *      init_protocol!{
+ *          model {
+ *              self.input => input,
+ *              self.output => output
+ *          }
+ *      }
+ *      ....
+ * }
+ * ```
+ * This will assign `self.input` as the `input` mentioned in protocol, and `self.out` as the
+ * `output` mentioned in the protocol.
+ *
+ * By doing that we are abe to read the data in the servlet execution function with the data model:
+ * ```
+ *      let x = data_model.input_x().get();    // read x
+ *      let y = data_model.input_y().get();    // read y
+ * ```
+ *
+ * In order to make the compiler knows our servlet actually use a specified protcol. The
+ * `use_protocol!` macro should be used inside the servlet implementation. For example
+ *
+ * ```
+ * impl SyncServlet for MyServlet {
+ *      use_protocol(MyProtocol);    // This makes the servlet uses the protocol we just defined
+ *      ......
+ * }
+ * ```
+ * The mapping syntax is as following:
+ * ```
+ *  [field.path.to.plumber]:rust_type => rust_identifer
+ * ```
+ *
+ * Limit: 
+ * * Currently we do not support compound object access, for example, we can not read the entire
+ * `Point2D` object
+ * * We also leak of the RLS object support, which should be done in the future
+ **/
 #[macro_export]
 macro_rules! protodef {
-    (protodef $proto_name:ident { $([$pipe:ident.$($field:tt)*]:$type:ty => $model_name:ident;)* } ) => {
+    ($(protodef $proto_name:ident { $([$pipe:ident.$($field:tt)*]:$type:ty => $model_name:ident;)* })*) => {
         mod plumber_protocol {
             use ::plumber_rs::protocol::{Primitive, TypeModelObject, ProtocolModel};
             use ::plumber_rs::pipe::PipeDescriptor;
             use ::std::collections::HashMap;
+            $(
             pub struct $proto_name {
                 type_model : TypeModelObject,
                 $(pub $model_name : Primitive<$type>,)*
@@ -394,15 +526,11 @@ macro_rules! protodef {
                     };
                 }
             }
+            )*
         }
         mod plumber_protocol_accessor {
             use ::plumber_rs::protocol::{DataModel, TypeInstanceObject, PrimitiveTypeTag, Primitive};
             use std::rc::Rc;
-            pub struct $proto_name {
-                model : Rc<::plumber_protocol::$proto_name>,
-                inst  : TypeInstanceObject
-            }
-
             pub struct FieldAccessor<'a, T: PrimitiveTypeTag<T> + Default + 'a> {
                 target : &'a Primitive<T>,
                 inst   : &'a mut TypeInstanceObject
@@ -415,6 +543,12 @@ macro_rules! protodef {
                 }
 
                 // TODO: implement the set
+            }
+
+            $(
+            pub struct $proto_name {
+                model : Rc<::plumber_protocol::$proto_name>,
+                inst  : TypeInstanceObject
             }
 
             impl $proto_name {
@@ -438,6 +572,62 @@ macro_rules! protodef {
                         inst  : type_inst
                     };
                 }
+            }
+            )*
+        }
+    }
+}
+
+/**
+ * Make the servlet implementation uses the given protocol defined by `protodef!`
+ *
+ * This should be  use inside the servlet implementation block. 
+ **/
+#[macro_export]
+macro_rules! use_protocol {
+    ($name:ident) => {
+        type ProtocolType   = ::plumber_protocol::$name;
+        type DataModelType  = ::plumber_protocol_accessor::$name;
+    }
+}
+
+/**
+ * Make the servlet implementation uses untyped mode, which we just do the pipe IO instead.
+ *
+ * This should be use inside the servlet implementation block
+ **/
+#[macro_export]
+macro_rules! no_protocol {
+    () => {
+        type ProtocolType = ::plumber_rs::protocol::Untyped;
+        type DataModelType = ::plumber_rs::protocol::Untyped;
+    }
+}
+
+/**
+ * Initialize the protocol in the init function block.
+ *
+ * The syntax is folloowing
+ *
+ * ```
+ * init_protocol! {
+ *      model_object {
+ *          self.pipe_obj => pipe_in_protocol
+ *      }
+ * }
+ * ```
+ *
+ * For details please read the `protodef!` doc
+ **/
+#[macro_export]
+macro_rules! init_protocol {
+    ($what:ident {$($actual:expr => $model:ident),*}) => {
+        {
+            let mut pipe_map = ::std::collections::HashMap::<String, ::plumber_rs::pipe::PipeDescriptor>::new();
+            $(pipe_map.insert(stringify!($model).to_string(), $actual.as_descriptor());)*
+            if !$what.init_model(pipe_map)
+            {
+                return ::plumber_rs::servlet::fail();
             }
         }
     }
