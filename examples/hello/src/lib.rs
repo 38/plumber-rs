@@ -8,7 +8,6 @@ extern crate plumber_rs;
 use plumber_rs::servlet::{Bootstrap, BootstrapResult, Unimplemented, SyncServlet, ServletFuncResult, success};
 
 struct Bootstrapper;
-
 struct Servlet;
 
 impl SyncServlet for Servlet {
@@ -18,22 +17,13 @@ impl SyncServlet for Servlet {
         plumber_log!(W "Hello World! args = {:?}", args);
         return success();
     }
-
-    fn exec(&mut self, _data : Self::DataModelType) -> ServletFuncResult 
-    {
-        return success();
-    }
-
-    fn cleanup(&mut self) -> ServletFuncResult 
-    {
-        return success();
-    }
+    fn exec(&mut self, _data : Self::DataModelType) -> ServletFuncResult  { success() }
+    fn cleanup(&mut self) -> ServletFuncResult { success() }
 }
 
 impl Bootstrap for Bootstrapper {
     type SyncServletType = Servlet;
     type AsyncServletType = Unimplemented;
-
     fn get(_args : &[&str]) -> BootstrapResult<Self>
     {
         return Self::sync(Servlet{});

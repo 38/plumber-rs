@@ -9,6 +9,37 @@
 //! To learn more about the Plumber dataflow programming middleware, please visit
 //! [https://plumberserver.com](https://plumberserver.com)
 //! 
+//! Sample servlet in Rust:
+//! ```
+//! 
+//! #[macro_use]
+//! extern crate plumber_rs;
+//! use plumber_rs::servlet::{Bootstrap, BootstrapResult, Unimplemented, SyncServlet, ServletFuncResult, success};
+//! struct Bootstrapper;
+//! struct Servlet;
+//! 
+//! impl SyncServlet for Servlet {
+//!     no_protocol!();
+//!     fn init(&mut self, args : &[&str], _protocol: &mut Self::ProtocolType) -> ServletFuncResult
+//!     {
+//!         plumber_log!(W "Hello World! args = {:?}", args);
+//!         return success();
+//!     }
+//!     fn exec(&mut self, _data : Self::DataModelType) -> ServletFuncResult  { success() }
+//!     fn cleanup(&mut self) -> ServletFuncResult { success() }
+//! }
+//! 
+//! impl Bootstrap for Bootstrapper {
+//!     type SyncServletType = Servlet;
+//!     type AsyncServletType = Unimplemented;
+//!     fn get(_args : &[&str]) -> BootstrapResult<Self>
+//!     {
+//!         return Self::sync(Servlet{});
+//!     }
+//! }
+//! export_bootstrap!(Bootstrapper);
+//! ```
+
 
 #[macro_use]
 mod plumber_api_call;
