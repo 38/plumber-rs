@@ -298,6 +298,10 @@ impl <T : PrimitiveTypeTag<T> + Default> Primitive<T> {
     /* TODO: we need to write the primitvie as well */
 }
 
+/**
+ * The tag trait indicates that this is a rust type which can be mapped into a Plumber
+ * language-neutral primitive type
+ **/
 pub trait PrimitiveTypeTag<T:Sized + Default> 
 {
     /**

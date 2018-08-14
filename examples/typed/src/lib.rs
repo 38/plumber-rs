@@ -64,7 +64,6 @@ impl Bootstrap for BootstrapType {
                 }));
             }
         }
-
         return Err(());
     }
 }
