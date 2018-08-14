@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate plumber_rs;
 
-use plumber_rs::servlet::{SyncServlet, ServletFuncResult, Bootstrap, Unimplemented, ServletMode};
+use plumber_rs::servlet::{SyncServlet, BootstrapResult, ServletFuncResult, Bootstrap, Unimplemented};
 use plumber_rs::pipe::{Pipe, PIPE_INPUT, PIPE_OUTPUT, PIPE_PERSIST};
 
 use std::io::{BufRead, Write};
@@ -65,20 +65,20 @@ struct BootstrapType{}
 impl Bootstrap for BootstrapType {
     type SyncServletType = Servlet;
     type AsyncServletType = Unimplemented;
-    fn get(_args:&[&str]) -> Result<ServletMode<Unimplemented, Servlet>, ()>
+    fn get(_args:&[&str]) -> BootstrapResult<Self>
     {
         if let Some(input) = Pipe::define("input", PIPE_INPUT, None)
         {
             if let Some(output) = Pipe::define("output", PIPE_OUTPUT, None)
             {
-                return Ok(ServletMode::SyncMode(Servlet{
+                return Self::sync(Servlet{
                     input : input,
                     output: output
-                }));
+                });
             }
         }
 
-        return Err(());
+        return Self::fail();
     }
 }
 

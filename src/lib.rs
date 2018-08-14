@@ -1,5 +1,6 @@
 // Copyright (C) 2018, Hao Hou
 #![feature(box_leak)]
+#![feature(associated_type_defaults)]
 
 //! The Plumber-Rust servlet library. This is the basic library that can be used to create Plumber
 //! servlets/guest code with Rust. For more details about how to create the Plumber servlet with

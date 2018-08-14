@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate plumber_rs;
 
-use plumber_rs::servlet::{SyncServlet, ServletFuncResult, Bootstrap, Unimplemented, ServletMode};
+use plumber_rs::servlet::{SyncServlet, ServletFuncResult, Bootstrap, BootstrapResult, Unimplemented, success, fail};
 use plumber_rs::pipe::{Pipe, PIPE_INPUT, PIPE_OUTPUT};
 use plumber_rs::protocol::ProtocolModel;
 
@@ -30,7 +30,7 @@ impl SyncServlet for Servlet {
                 self.input => input
             }
         }
-        return Ok(());
+        return success();
     }
     fn exec(&mut self, mut model : Self::DataModelType) -> ServletFuncResult 
     { 
@@ -39,12 +39,12 @@ impl SyncServlet for Servlet {
             if let Some(y) = model.y_coord().get()
             {
                 writeln!(self.output, "The distance from (0,0) to ({},{}) is {}", x, y, (x*x + y*y).sqrt());
-                return Ok(());
+                return success();
             }
         }
-        return Err(());
+        return fail();
     }
-    fn cleanup(&mut self) -> ServletFuncResult { Ok(()) }
+    fn cleanup(&mut self) -> ServletFuncResult { success() }
 }
 
 struct BootstrapType{}
@@ -52,19 +52,19 @@ struct BootstrapType{}
 impl Bootstrap for BootstrapType {
     type SyncServletType = Servlet;
     type AsyncServletType = Unimplemented;
-    fn get(_args:&[&str]) -> Result<ServletMode<Unimplemented, Servlet>, ()>
+    fn get(_args:&[&str]) -> BootstrapResult<Self>
     {
         if let Some(input) = Pipe::define("input", PIPE_INPUT, Some("graphics/Point2D"))
         {
             if let Some(output) = Pipe::define("output", PIPE_OUTPUT, None)
             {
-                return Ok(ServletMode::SyncMode(Servlet{
+                return Self::sync(Servlet{
                     input : input,
                     output: output
-                }));
+                });
             }
         }
-        return Err(());
+        return Self::fail();
     }
 }
 

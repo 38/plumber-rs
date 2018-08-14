@@ -215,6 +215,16 @@ pub enum ServletMode<AsyncType: AsyncServlet, SyncType: SyncServlet> {
 }
 
 /**
+ * The result of the bootstrap stage of the servlet
+ **/
+pub enum BootstrapResult<BT:Bootstrap> {
+    /// The servlet has been bootstrapped successfully
+    Success(ServletMode<BT::AsyncServletType, BT::SyncServletType>),
+    /// The servlet cannot be loaded
+    Fail()
+}
+
+/**
  * The trait for the bootstrap type
  *
  * The bootstrap type of a servlet is the type that carries all the required information about the
@@ -222,7 +232,8 @@ pub enum ServletMode<AsyncType: AsyncServlet, SyncType: SyncServlet> {
  * object needs to be exported with macro `export_bootstrap!(bootstrap_impl)`. Where
  * `bootstrap_impl` is the implememntation of this trait.
  **/
-pub trait Bootstrap {
+pub trait Bootstrap where Self : Sized
+{
     /**
      * The type for servlet implememntation of the async servlet model.
      *
@@ -251,6 +262,40 @@ pub trait Bootstrap {
      *
      * Returns The bootstrap result, or error
      **/
-    fn get(args:&[&str]) -> Result<ServletMode<Self::AsyncServletType, Self::SyncServletType>, ()>;
+    fn get(args:&[&str]) -> BootstrapResult<Self>;
+
+    /**
+     * The helper function to return a success bootstrap result with a sync servlet instance.
+     *
+     * * `servlet`: The servlet to return
+     *
+     * Returns the bootstrap result
+     **/
+    fn async(servlet : Self::AsyncServletType) -> BootstrapResult<Self>
+    {
+        return BootstrapResult::Success(ServletMode::AsyncMode(servlet));
+    }
+
+    /**
+     * The helper function to create a success bootstrap result with an async servlet instance.
+     *
+     * * `servlet`: The servlet to return
+     *
+     * Returns the bootstrap result
+     **/
+    fn sync(servlet : Self::SyncServletType) -> BootstrapResult<Self>
+    {
+        return BootstrapResult::Success(ServletMode::SyncMode(servlet));
+    }
+    
+    /**
+     * The helper function to create a failed bootstrap result
+     *
+     * Returns the bootstrap result
+     **/
+    fn fail() -> BootstrapResult<Self>
+    {
+        return BootstrapResult::Fail();
+    }
 }
 

@@ -7,7 +7,7 @@ use std::os::raw::{c_char, c_void};
 use std::ffi::CStr;
 use std::ptr::null;
 use std::rc::Rc;
-use ::servlet::{Unimplemented, AsyncServlet, SyncServlet, ServletMode, ServletFuncResult, Bootstrap, AsyncTaskHandle, fail};
+use ::servlet::{Unimplemented, AsyncServlet, SyncServlet, ServletMode, ServletFuncResult, Bootstrap, AsyncTaskHandle, fail, BootstrapResult};
 use ::protocol::{TypeModelObject, TypeInstanceObject, Untyped, ProtocolModel, DataModel};
 
 impl SyncServlet for Unimplemented {
@@ -180,7 +180,7 @@ pub unsafe fn call_bootstrap_obj<T:Bootstrap>(argc: u32, argv: *const *const c_c
     {
         if let Some(args) = make_argument_list(argc, argv)
         {
-            if let Ok(servlet_mode) = T::get(&args[0..]) 
+            if let BootstrapResult::Success(servlet_mode) = T::get(&args[0..]) 
             {
                 let result_obj = Box::new(create_servlet_object::<T>(servlet_mode, type_model));
 
