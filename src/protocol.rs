@@ -458,7 +458,7 @@ pub trait ProtocolModel {
  **/
 pub type Untyped = ();
 
-impl ProtocolModel for () {
+impl ProtocolModel for Untyped {
     fn init_model(&mut self, _p:HashMap<String, PipeDescriptor>) -> bool { true }
     fn new_protocol_model(_tm:TypeModelObject) -> Untyped {}
 }
