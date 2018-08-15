@@ -35,7 +35,7 @@ plumber-rs = {git = "https://github.com/38/plumber-rs.git"}
 In Rust, a servlet is actually a trait. For the sync servlet, we can implemnet the trait `plumber_rs::servlet::sync_servlet`.
 
 ```rust
-use plumber_rs::servlet::{SyncServlet, Unimplemented, ServletMode, ServletFuncResult, Bootstrap};
+use plumber_rs::servlet::{SyncServlet, Unimplemented, ServletMode, ServletFuncResult, Bootstrap, success, fail};
 use plumber_rs::protocol::{ProtocolModel, Untyped};
 
 struct HelloServlet {}
@@ -45,10 +45,10 @@ impl SyncServlet for HelloServlet {
     fn init(&mut self, _args:&[&str], _model:&mut Self::ProtocolType) -> ServletFuncResult 
     {
         plumber_log!(N "Hello World");
-        return Ok(());
+        return success();
     }
-    fn exec(&mut self, _ti:TypeInstanceObject) -> ServletFuncResult  { Ok(()) }
-    fn cleanup(&mut self) -> ServletFuncResult { Ok(()) }
+    fn exec(&mut self, _ti:TypeInstanceObject) -> ServletFuncResult  { success(); }
+    fn cleanup(&mut self) -> ServletFuncResult { success(); }
 }
 
 ```
@@ -61,9 +61,9 @@ struct BootstrapType{}
 impl Bootstrap for BootstrapType {
     type SyncServletType = HelloServlet;
     type AsyncServletType = Unimplemented;
-    fn get(_args:&[&str]) -> Result<ServletMode<Unimplemented, HelloServlet>, ()>
+    fn get(_args:&[&str]) -> BootstrapResult<Self>
     {
-        return Ok(ServletMode::SyncMode(HelloServlet{}));
+        return Self::sync(HelloServlet{});
     }
 }
 
@@ -90,7 +90,7 @@ cargo build
 extern crate plumber_rs;
 extern crate libc;
 
-use plumber_rs::servlet::{SyncServlet, Unimplemented, ServletMode, ServletFuncResult, Bootstrap};
+use plumber_rs::servlet::{SyncServlet, Unimplemented, ServletFuncResult, Bootstrap, BootstrapResult, sucess, fail};
 use plumber_rs::protocol::{ProtocolModel, Untyped};
 
 struct HelloServlet {}
@@ -100,10 +100,10 @@ impl SyncServlet for HelloServlet {
     fn init(&mut self, _args:&[&str], _model:&mut Self::ProtocolType) -> ServletFuncResult 
     {
         plumber_log!(N "Hello World");
-        return Ok(());
+        return sucess();
     }
-    fn exec(&mut self, _model:Self::DataModelType) -> ServletFuncResult  { Ok(()) }
-    fn cleanup(&mut self) -> ServletFuncResult { Ok(()) }
+    fn exec(&mut self, _model:Self::DataModelType) -> ServletFuncResult  { sucess() }
+    fn cleanup(&mut self) -> ServletFuncResult { sucess() }
 }
 
 struct BootstrapType{}
@@ -111,9 +111,9 @@ struct BootstrapType{}
 impl Bootstrap for BootstrapType {
     type SyncServletType = HelloServlet;
     type AsyncServletType = Unimplemented;
-    fn get(_args:&[&str]) -> Result<ServletMode<Unimplemented, HelloServlet>, ()>
+    fn get(_args:&[&str]) -> BootstrapResult
     {
-        return Ok(ServletMode::SyncMode(HelloServlet{}));
+        return Self::sync(HelloServlet{});
     }
 }
 
