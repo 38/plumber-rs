@@ -6,7 +6,7 @@ use std::ptr::null;
 macro_rules! plumber_api_call {
     (let $result:ident = $name:ident ($($ap:expr),*) in $what:block) => {
 
-        use ::API_ADDRESS_TABLE;
+        use crate::API_ADDRESS_TABLE;
 
         if let Some(ref addr_tab) = unsafe {API_ADDRESS_TABLE}
         {
@@ -20,7 +20,7 @@ macro_rules! plumber_api_call {
     
     ($name:ident ($($ap:expr),*) in $what:block) => {
 
-        use ::API_ADDRESS_TABLE;
+        use crate::API_ADDRESS_TABLE;
 
         if let Some(ref addr_tab) = unsafe {API_ADDRESS_TABLE}
         {

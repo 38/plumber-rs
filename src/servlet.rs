@@ -8,7 +8,7 @@
 //! To create a Plumber servlet with rust, `Bootstrap` trait must be implemented by some type and
 //! this type should be used in `export_bootstrap!` macro.
 
-use ::protocol::{ProtocolModel, DataModel};
+use crate::protocol::{ProtocolModel, DataModel};
 
 /**
  * The servlet function call result

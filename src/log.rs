@@ -55,7 +55,7 @@ pub fn log_write(level:i32, file:&str, line:i32, message:&str)
                 let (c_func, _func) = get_cstr(Some(log_data.func));
 
                 plumber_api_call! {
-                    log_write(log_data.level, c_file, c_func, log_data.line, c_format, ap as *mut ::plumber_api::__va_list_tag) in {}
+                    log_write(log_data.level, c_file, c_func, log_data.line, c_format, ap as *mut crate::plumber_api::__va_list_tag) in {}
                 }
             }
                 

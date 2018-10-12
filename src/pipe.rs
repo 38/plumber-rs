@@ -82,7 +82,7 @@ extern "C" fn invoke_pipe_cntl(ap:*mut crate::va_list_helper::__va_list_tag, dat
 
 macro_rules! pipe_cntl {
     ($pipe:expr, $opcode:expr, $($args:expr),*) => {
-        if let Some(ref va_helper) = unsafe{::VA_LIST_HELPER}
+        if let Some(ref va_helper) = unsafe{crate::VA_LIST_HELPER}
         {
             let mut pipe_cntl_data = PipeCntlData {
                 pipe  : $pipe,
