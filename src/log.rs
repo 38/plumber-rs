@@ -13,9 +13,9 @@
 //!     //...
 //! ```
 
-use ::plumber_api_call::get_cstr;
-use ::va_list_helper::{__va_list_tag};
-use ::VA_LIST_HELPER;
+use crate::plumber_api_call::get_cstr;
+use crate::va_list_helper::{__va_list_tag};
+use crate::VA_LIST_HELPER;
 
 use std::os::raw::c_void;
 

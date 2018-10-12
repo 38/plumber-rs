@@ -124,7 +124,7 @@ impl<T> __IncompleteArrayField<T> {
     }
 }
 impl<T> ::std::fmt::Debug for __IncompleteArrayField<T> {
-    fn fmt(&self, fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+    fn fmt(&self, fmt: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         fmt.write_str("__IncompleteArrayField")
     }
 }
@@ -143,7 +143,7 @@ pub const __USE_ISOC99: u32 = 1;
 pub const __USE_ISOC95: u32 = 1;
 pub const __USE_POSIX_IMPLICITLY: u32 = 1;
 pub const _POSIX_SOURCE: u32 = 1;
-pub const _POSIX_C_SOURCE: u32 = 200809;
+pub const _POSIX_C_SOURCE: f64 = 200809.0;
 pub const __USE_POSIX: u32 = 1;
 pub const __USE_POSIX2: u32 = 1;
 pub const __USE_POSIX199309: u32 = 1;
@@ -157,7 +157,7 @@ pub const __USE_FORTIFY_LEVEL: u32 = 0;
 pub const _STDC_PREDEF_H: u32 = 1;
 pub const __STDC_IEC_559__: u32 = 1;
 pub const __STDC_IEC_559_COMPLEX__: u32 = 1;
-pub const __STDC_ISO_10646__: u32 = 201505;
+pub const __STDC_ISO_10646__: f64 = 201505.0;
 pub const __STDC_NO_THREADS__: u32 = 1;
 pub const __GNU_LIBRARY__: u32 = 6;
 pub const __GLIBC__: u32 = 2;
@@ -192,8 +192,6 @@ pub const __S_ISVTX: u32 = 512;
 pub const __S_IREAD: u32 = 256;
 pub const __S_IWRITE: u32 = 128;
 pub const __S_IEXEC: u32 = 64;
-pub const UTIME_NOW: u32 = 1073741823;
-pub const UTIME_OMIT: u32 = 1073741822;
 pub const S_IFMT: u32 = 61440;
 pub const S_IFDIR: u32 = 16384;
 pub const S_IFCHR: u32 = 8192;
@@ -317,19 +315,19 @@ pub const UINT_LEAST8_MAX: u32 = 255;
 pub const UINT_LEAST16_MAX: u32 = 65535;
 pub const UINT_LEAST32_MAX: u32 = 4294967295;
 pub const INT_FAST8_MIN: i32 = -128;
-pub const INT_FAST16_MIN: i64 = -9223372036854775808;
-pub const INT_FAST32_MIN: i64 = -9223372036854775808;
+pub const INT_FAST16_MIN: f64 = -9223372036854776000.0;
+pub const INT_FAST32_MIN: f64 = -9223372036854776000.0;
 pub const INT_FAST8_MAX: u32 = 127;
-pub const INT_FAST16_MAX: u64 = 9223372036854775807;
-pub const INT_FAST32_MAX: u64 = 9223372036854775807;
+pub const INT_FAST16_MAX: f64 = 9223372036854776000.0;
+pub const INT_FAST32_MAX: f64 = 9223372036854776000.0;
 pub const UINT_FAST8_MAX: u32 = 255;
 pub const UINT_FAST16_MAX: i32 = -1;
 pub const UINT_FAST32_MAX: i32 = -1;
-pub const INTPTR_MIN: i64 = -9223372036854775808;
-pub const INTPTR_MAX: u64 = 9223372036854775807;
+pub const INTPTR_MIN: f64 = -9223372036854776000.0;
+pub const INTPTR_MAX: f64 = 9223372036854776000.0;
 pub const UINTPTR_MAX: i32 = -1;
-pub const PTRDIFF_MIN: i64 = -9223372036854775808;
-pub const PTRDIFF_MAX: u64 = 9223372036854775807;
+pub const PTRDIFF_MIN: f64 = -9223372036854776000.0;
+pub const PTRDIFF_MAX: f64 = 9223372036854776000.0;
 pub const SIG_ATOMIC_MIN: i32 = -2147483648;
 pub const SIG_ATOMIC_MAX: u32 = 2147483647;
 pub const SIZE_MAX: i32 = -1;
@@ -373,14 +371,14 @@ pub const ASYNC_CNTL_NOTIFY_WAIT: u32 = 1;
 pub const ASYNC_CNTL_RETCODE: u32 = 2;
 pub const ASYNC_CNTL_CANCEL: u32 = 3;
 pub const _UNISTD_H: u32 = 1;
-pub const _POSIX_VERSION: u32 = 200809;
-pub const __POSIX2_THIS_VERSION: u32 = 200809;
-pub const _POSIX2_VERSION: u32 = 200809;
-pub const _POSIX2_C_VERSION: u32 = 200809;
-pub const _POSIX2_C_BIND: u32 = 200809;
-pub const _POSIX2_C_DEV: u32 = 200809;
-pub const _POSIX2_SW_DEV: u32 = 200809;
-pub const _POSIX2_LOCALEDEF: u32 = 200809;
+pub const _POSIX_VERSION: f64 = 200809.0;
+pub const __POSIX2_THIS_VERSION: f64 = 200809.0;
+pub const _POSIX2_VERSION: f64 = 200809.0;
+pub const _POSIX2_C_VERSION: f64 = 200809.0;
+pub const _POSIX2_C_BIND: f64 = 200809.0;
+pub const _POSIX2_C_DEV: f64 = 200809.0;
+pub const _POSIX2_SW_DEV: f64 = 200809.0;
+pub const _POSIX2_LOCALEDEF: f64 = 200809.0;
 pub const _XOPEN_VERSION: u32 = 700;
 pub const _XOPEN_XCU_VERSION: u32 = 4;
 pub const _XOPEN_XPG2: u32 = 1;
@@ -393,58 +391,58 @@ pub const _XOPEN_LEGACY: u32 = 1;
 pub const _BITS_POSIX_OPT_H: u32 = 1;
 pub const _POSIX_JOB_CONTROL: u32 = 1;
 pub const _POSIX_SAVED_IDS: u32 = 1;
-pub const _POSIX_PRIORITY_SCHEDULING: u32 = 200809;
-pub const _POSIX_SYNCHRONIZED_IO: u32 = 200809;
-pub const _POSIX_FSYNC: u32 = 200809;
-pub const _POSIX_MAPPED_FILES: u32 = 200809;
-pub const _POSIX_MEMLOCK: u32 = 200809;
-pub const _POSIX_MEMLOCK_RANGE: u32 = 200809;
-pub const _POSIX_MEMORY_PROTECTION: u32 = 200809;
+pub const _POSIX_PRIORITY_SCHEDULING: f64 = 200809.0;
+pub const _POSIX_SYNCHRONIZED_IO: f64 = 200809.0;
+pub const _POSIX_FSYNC: f64 = 200809.0;
+pub const _POSIX_MAPPED_FILES: f64 = 200809.0;
+pub const _POSIX_MEMLOCK: f64 = 200809.0;
+pub const _POSIX_MEMLOCK_RANGE: f64 = 200809.0;
+pub const _POSIX_MEMORY_PROTECTION: f64 = 200809.0;
 pub const _POSIX_CHOWN_RESTRICTED: u32 = 0;
 pub const _POSIX_VDISABLE: u8 = 0u8;
 pub const _POSIX_NO_TRUNC: u32 = 1;
 pub const _XOPEN_REALTIME: u32 = 1;
 pub const _XOPEN_REALTIME_THREADS: u32 = 1;
 pub const _XOPEN_SHM: u32 = 1;
-pub const _POSIX_THREADS: u32 = 200809;
+pub const _POSIX_THREADS: f64 = 200809.0;
 pub const _POSIX_REENTRANT_FUNCTIONS: u32 = 1;
-pub const _POSIX_THREAD_SAFE_FUNCTIONS: u32 = 200809;
-pub const _POSIX_THREAD_PRIORITY_SCHEDULING: u32 = 200809;
-pub const _POSIX_THREAD_ATTR_STACKSIZE: u32 = 200809;
-pub const _POSIX_THREAD_ATTR_STACKADDR: u32 = 200809;
-pub const _POSIX_THREAD_PRIO_INHERIT: u32 = 200809;
-pub const _POSIX_THREAD_PRIO_PROTECT: u32 = 200809;
-pub const _POSIX_THREAD_ROBUST_PRIO_INHERIT: u32 = 200809;
+pub const _POSIX_THREAD_SAFE_FUNCTIONS: f64 = 200809.0;
+pub const _POSIX_THREAD_PRIORITY_SCHEDULING: f64 = 200809.0;
+pub const _POSIX_THREAD_ATTR_STACKSIZE: f64 = 200809.0;
+pub const _POSIX_THREAD_ATTR_STACKADDR: f64 = 200809.0;
+pub const _POSIX_THREAD_PRIO_INHERIT: f64 = 200809.0;
+pub const _POSIX_THREAD_PRIO_PROTECT: f64 = 200809.0;
+pub const _POSIX_THREAD_ROBUST_PRIO_INHERIT: f64 = 200809.0;
 pub const _POSIX_THREAD_ROBUST_PRIO_PROTECT: i32 = -1;
-pub const _POSIX_SEMAPHORES: u32 = 200809;
-pub const _POSIX_REALTIME_SIGNALS: u32 = 200809;
-pub const _POSIX_ASYNCHRONOUS_IO: u32 = 200809;
+pub const _POSIX_SEMAPHORES: f64 = 200809.0;
+pub const _POSIX_REALTIME_SIGNALS: f64 = 200809.0;
+pub const _POSIX_ASYNCHRONOUS_IO: f64 = 200809.0;
 pub const _POSIX_ASYNC_IO: u32 = 1;
 pub const _LFS_ASYNCHRONOUS_IO: u32 = 1;
-pub const _POSIX_PRIORITIZED_IO: u32 = 200809;
+pub const _POSIX_PRIORITIZED_IO: f64 = 200809.0;
 pub const _LFS64_ASYNCHRONOUS_IO: u32 = 1;
 pub const _LFS_LARGEFILE: u32 = 1;
 pub const _LFS64_LARGEFILE: u32 = 1;
 pub const _LFS64_STDIO: u32 = 1;
-pub const _POSIX_SHARED_MEMORY_OBJECTS: u32 = 200809;
+pub const _POSIX_SHARED_MEMORY_OBJECTS: f64 = 200809.0;
 pub const _POSIX_CPUTIME: u32 = 0;
 pub const _POSIX_THREAD_CPUTIME: u32 = 0;
 pub const _POSIX_REGEXP: u32 = 1;
-pub const _POSIX_READER_WRITER_LOCKS: u32 = 200809;
+pub const _POSIX_READER_WRITER_LOCKS: f64 = 200809.0;
 pub const _POSIX_SHELL: u32 = 1;
-pub const _POSIX_TIMEOUTS: u32 = 200809;
-pub const _POSIX_SPIN_LOCKS: u32 = 200809;
-pub const _POSIX_SPAWN: u32 = 200809;
-pub const _POSIX_TIMERS: u32 = 200809;
-pub const _POSIX_BARRIERS: u32 = 200809;
-pub const _POSIX_MESSAGE_PASSING: u32 = 200809;
-pub const _POSIX_THREAD_PROCESS_SHARED: u32 = 200809;
+pub const _POSIX_TIMEOUTS: f64 = 200809.0;
+pub const _POSIX_SPIN_LOCKS: f64 = 200809.0;
+pub const _POSIX_SPAWN: f64 = 200809.0;
+pub const _POSIX_TIMERS: f64 = 200809.0;
+pub const _POSIX_BARRIERS: f64 = 200809.0;
+pub const _POSIX_MESSAGE_PASSING: f64 = 200809.0;
+pub const _POSIX_THREAD_PROCESS_SHARED: f64 = 200809.0;
 pub const _POSIX_MONOTONIC_CLOCK: u32 = 0;
-pub const _POSIX_CLOCK_SELECTION: u32 = 200809;
-pub const _POSIX_ADVISORY_INFO: u32 = 200809;
-pub const _POSIX_IPV6: u32 = 200809;
-pub const _POSIX_RAW_SOCKETS: u32 = 200809;
-pub const _POSIX2_CHAR_TERM: u32 = 200809;
+pub const _POSIX_CLOCK_SELECTION: f64 = 200809.0;
+pub const _POSIX_ADVISORY_INFO: f64 = 200809.0;
+pub const _POSIX_IPV6: f64 = 200809.0;
+pub const _POSIX_RAW_SOCKETS: f64 = 200809.0;
+pub const _POSIX2_CHAR_TERM: f64 = 200809.0;
 pub const _POSIX_SPORADIC_SERVER: i32 = -1;
 pub const _POSIX_THREAD_SPORADIC_SERVER: i32 = -1;
 pub const _POSIX_TRACE: i32 = -1;
@@ -990,23 +988,23 @@ pub type __gnuc_va_list = __builtin_va_list;
 /// @brief the type used to the pipe ID
 pub type runtime_api_pipe_id_t = u16;
 /// @brief the type used to represent a pipe object, either a real pipe or a reference
-/// to a module function
+///        to a module function
 /// @note there are two different memory layout for this type <br/>
-/// a) 11111111 00000000 pppppppp pppppppp <br/>
-/// This is used when we refer a pipe id <br/>
-/// b) mmmmmmmm oooooooo oooooooo oooooooo <br/>
-/// This is used when we refer a service module function
+///       a) 11111111 00000000 pppppppp pppppppp <br/>
+///          This is used when we refer a pipe id <br/>
+///       b) mmmmmmmm oooooooo oooooooo oooooooo <br/>
+///          This is used when we refer a service module function
 pub type runtime_api_pipe_t = u32;
 /// @brief the type used for the pipe define flags
-/// @note the bit layout of a pipe flags is  <br/>
-/// rrrrrrrr rrrDsapd tttttttt tttttttt <br/>
-/// D = disabled <br/>
-/// s = Shadow Pipe <br/>
-/// a = Async Pipe <br/>
-/// r = Reserved <br/>
-/// p = Presist  <br/>
-/// d = Pipe direction <br/>
-/// t = Target Pipe <br/>
+///  @note the bit layout of a pipe flags is  <br/>
+///        rrrrrrrr rrrDsapd tttttttt tttttttt <br/>
+///        D = disabled <br/>
+///        s = Shadow Pipe <br/>
+///        a = Async Pipe <br/>
+///        r = Reserved <br/>
+///        p = Presist  <br/>
+///        d = Pipe direction <br/>
+///        t = Target Pipe <br/>
 pub type runtime_api_pipe_flags_t = u32;
 #[repr(C)]
 #[derive(Debug)]
@@ -1474,15 +1472,15 @@ fn bindgen_test_layout___const_checker_eq___non_module_related_pop_state__() {
 /// @brief the token used to request local scope token
 pub type runtime_api_scope_token_t = u32;
 /// @brief The event description of the event driven scope stream. Which is actually a file descriptor and
-/// when the file descriptor should be treated as the stream gets ready
-/// If both read and write is 0, it means we want to remove the event from the module
+///        when the file descriptor should be treated as the stream gets ready
+///        If both read and write is 0, it means we want to remove the event from the module
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct runtime_api_scope_ready_event_t {
-    /// < The FD that is used for event notification
+    ///< The FD that is used for event notification
     pub fd: ::std::os::raw::c_int,
     pub _bitfield_1: __BindgenBitfieldUnit<[u8; 1usize], u8>,
-    /// < The time limit for the RLS token not gets ready
+    ///< The time limit for the RLS token not gets ready
     pub timeout: i32,
 }
 #[test]
@@ -1561,11 +1559,11 @@ impl runtime_api_scope_ready_event_t {
     }
 }
 /// @brief Represent an entity in the scope. It's actually a group of callback function for the opeartion
-/// that is supported by the scope entity and a memory address which represent the entity data
+///        that is supported by the scope entity and a memory address which represent the entity data
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct runtime_api_scope_entity_t {
-    /// < the actual pointer
+    ///< the actual pointer
     pub data: *mut ::std::os::raw::c_void,
     /// @brief the callback function used to copy the memory
     /// @param ptr the pointer to copy
@@ -1582,15 +1580,15 @@ pub struct runtime_api_scope_entity_t {
     >,
     /// @brief the callback function used to open the rscope pointer as a byte stream
     /// @note this is the callback function is used to serialize the RLS memory info a
-    /// byte stream. This feature is used for the framework to write a serialized
-    /// RLS directly to the pipe, which means we do not needs high level user-space
-    /// program to handle this. <br/>
-    /// The reason for why we have this is, without this mechanism,
-    /// when we build a file server, we need to read the file content into a mem pipe,
-    /// and then copy the mem pipe to async buffer and then write it to the socket.
-    /// Most of the operations are unncessary. By introducing the file RLS, and this
-    /// byte stream interface, we will be able to read the file from the async write loop
-    /// directly. In this way, we can elimite the memory copy completely. <br/>
+    ///       byte stream. This feature is used for the framework to write a serialized
+    ///       RLS directly to the pipe, which means we do not needs high level user-space
+    ///       program to handle this. <br/>
+    ///       The reason for why we have this is, without this mechanism,
+    ///       when we build a file server, we need to read the file content into a mem pipe,
+    ///       and then copy the mem pipe to async buffer and then write it to the socket.
+    ///       Most of the operations are unncessary. By introducing the file RLS, and this
+    ///       byte stream interface, we will be able to read the file from the async write loop
+    ///       directly. In this way, we can elimite the memory copy completely. <br/>
     /// @param ptr the RLS pointer to open
     /// @return the byte stream handle, which is the state variable for the serialization, NULL on error case
     pub open_func: ::std::option::Option<
@@ -1602,8 +1600,8 @@ pub struct runtime_api_scope_entity_t {
     /// @param bufsize the buffer size
     /// @return the bytes has been read to buffer, or error code
     /// @note If this function returns 0, it may indicates the stream is waiting for resource gets ready
-    /// In this case, if the user supports event driven interface, it may call event_func for the
-    /// event description that hints the availibility of the stream.
+    ///       In this case, if the user supports event driven interface, it may call event_func for the
+    ///       event description that hints the availibility of the stream.
     pub read_func: ::std::option::Option<
         unsafe extern "C" fn(
             handle: *mut ::std::os::raw::c_void,
@@ -1621,7 +1619,7 @@ pub struct runtime_api_scope_entity_t {
     /// @param handle The stream handle
     /// @param event_buf The buffer used to return the event
     /// @return Number of event has been registered, 0 if no event should be registered, 1 for needs to register one
-    /// event and error code for all the error cases
+    ///         event and error code for all the error cases
     pub event_func: ::std::option::Option<
         unsafe extern "C" fn(
             handle: *mut ::std::os::raw::c_void,
@@ -1744,47 +1742,47 @@ fn bindgen_test_layout_runtime_api_scope_entity_t() {
     );
 }
 /// @brief describe the param for the request that ask for the write_token API consume the
-/// token data in the way specified by this
+///        token data in the way specified by this
 /// @details Problem: This mechanism is used to address the problem that the directly RLS token access interface
-/// is not buffer friendly. Consider we use an BIO object to write the pipe, so all the data that has written
-/// to pipe via BIO is bufferred in the BIO buffer. After this, if we want to write a RLS token, the BIO buffer
-/// has to flush no matter if it's full or not. <br/>
-/// Because the write_token call do not aware of the BIO buffer, so it will write the data directly, however all
-/// the bufferred BIO data which should be written before the token is now after the token content. <br/>
-/// However, this additional flush causes serious problem. Because we have to flush the buffer once the write_token has
-/// been called. For example, previously, we will be able to use the bio call like:
-/// <code>
-/// pstd_bio_printf("<div>%s</div>", file_content);
-/// </code>
-/// To write the response which will translate to 1 pipe_write of course, however, by introducing the DRA, we should use:
-/// <code>
-/// pstd_bio_printf("<div>");
-/// pstd_bio_write_token(file_token);
-/// pstd_bio_printf("</div>");
-/// </code>
-/// Which actually needs to translate to 3 pipe_write, which turns out to be 3 syscalls. <br/>
-/// This causes a huge performance downgrade from 115K Req/sec to 68K req/sec for the user-agent echo back server.
-/// Solution: This is the descriptor that request the first N bytes from the RLS token stream, and this data will be passed in
-/// to the callback provided by the caller of write_token, by having this callback, the caller (which is PSTD BIO of course),
-/// will have a last chance to fill the unused buffer. If the stream is exhuasted by the data request, no underlying DRA will
-/// happen, otherwise, the DRA will handle the remaining portion of the stream. <br/>
-/// If the data is exhuasted by the data request and BIO buffer is not full, then the buffer won't flush. In this way, we make
-/// a full use of user-space buffer before we flush it.
+///         is not buffer friendly. Consider we use an BIO object to write the pipe, so all the data that has written
+///         to pipe via BIO is bufferred in the BIO buffer. After this, if we want to write a RLS token, the BIO buffer
+///         has to flush no matter if it's full or not. <br/>
+///         Because the write_token call do not aware of the BIO buffer, so it will write the data directly, however all
+///         the bufferred BIO data which should be written before the token is now after the token content. <br/>
+///         However, this additional flush causes serious problem. Because we have to flush the buffer once the write_token has
+///         been called. For example, previously, we will be able to use the bio call like:
+///         <code>
+///         		pstd_bio_printf("<div>%s</div>", file_content);
+///         </code>
+///         To write the response which will translate to 1 pipe_write of course, however, by introducing the DRA, we should use:
+///         <code>
+///         		pstd_bio_printf("<div>");
+///         		pstd_bio_write_token(file_token);
+///         		pstd_bio_printf("</div>");
+///         </code>
+///         Which actually needs to translate to 3 pipe_write, which turns out to be 3 syscalls. <br/>
+///         This causes a huge performance downgrade from 115K Req/sec to 68K req/sec for the user-agent echo back server.
+///         Solution: This is the descriptor that request the first N bytes from the RLS token stream, and this data will be passed in
+///         to the callback provided by the caller of write_token, by having this callback, the caller (which is PSTD BIO of course),
+///         will have a last chance to fill the unused buffer. If the stream is exhuasted by the data request, no underlying DRA will
+///         happen, otherwise, the DRA will handle the remaining portion of the stream. <br/>
+///         If the data is exhuasted by the data request and BIO buffer is not full, then the buffer won't flush. In this way, we make
+///         a full use of user-space buffer before we flush it.
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct runtime_api_scope_token_data_request_t {
-    /// < The number of bytes we are reqeusting
+    ///< The number of bytes we are reqeusting
     pub size: usize,
-    /// < The caller context of this data request
+    ///< The caller context of this data request
     pub context: *mut ::std::os::raw::c_void,
     /// @brief the callback function that handles the requested data, it may be called multiple times
-    /// once the data_handler returns 0, then it means the data request do not want the data anymore
+    ///        once the data_handler returns 0, then it means the data request do not want the data anymore
     /// @param context the caller defined context
     /// @param data the pointer to the data section
     /// @param count the number of bytes is available at this time
     /// @return the number of bytes handled by this call, if the return value is larger than 0 and the requested size
-    /// limit not reach, then the remaning data from the token stream will keep sent to the handler, until
-    /// it returns an error code or 0
+    ///         limit not reach, then the remaning data from the token stream will keep sent to the handler, until
+    ///         it returns an error code or 0
     pub data_handler: ::std::option::Option<
         unsafe extern "C" fn(
             context: *mut ::std::os::raw::c_void,
@@ -1863,9 +1861,9 @@ pub type runtime_api_pipe_type_callback_t = ::std::option::Option<
         data: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
-/// < This is a sync servlet
+///< This is a sync servlet
 pub const RUNTIME_API_INIT_RESULT_SYNC: _bindgen_ty_1 = 0;
-/// < This is an async servlet
+///< This is an async servlet
 pub const RUNTIME_API_INIT_RESULT_ASYNC: _bindgen_ty_1 = 1;
 /// @brief The return value for the servlet's init function, which indicates the property of the servlet
 pub type _bindgen_ty_1 = u32;
@@ -1915,23 +1913,23 @@ pub struct _runtime_api_async_task_handle_t {
 pub type runtime_api_async_handle_t = _runtime_api_async_task_handle_t;
 /// @brief the address table that contains the address of the pipe APIs
 /// @note we do not need the servlet instance id, because the caller of the exec of the init will definately have the execution info. <br/>
-/// All the function defined in this place can only be called within the servlet context. <br/>
+///       All the function defined in this place can only be called within the servlet context. <br/>
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct runtime_api_address_table_t {
     /// @brief define a named pipe in the PDT of this servlet
     /// @details Define a IO pipe for a servlet. The function will define a pipe for a servlet.
-    /// Which is actually either the input or the output end of a pipe. <br/>
-    /// The function will return a integer called pipe descriptor. The pipe descriptor can be
-    /// used later in the exec function of the servlet as the data source/sink. <br/>
-    /// For the given servlet instance, once the instance is initialized, the servlet can not
-    /// define the pipe anymore. <br/>
-    /// The reason for why we need such limitation is the topologic structure of a service *must*
-    /// be defined before the framework start serving traffic. Which means, we do not allow the
-    /// node change it's layout after the initialization pharse. <br/>
-    /// Also, the pipe can be defined with different properties. The properties can be changed at
-    /// the execution pharse for *only that exuection*. Which means you can not preserve the pipe
-    /// flags changed in execution phrase.
+    ///         Which is actually either the input or the output end of a pipe. <br/>
+    ///         The function will return a integer called pipe descriptor. The pipe descriptor can be
+    ///         used later in the exec function of the servlet as the data source/sink. <br/>
+    ///         For the given servlet instance, once the instance is initialized, the servlet can not
+    ///         define the pipe anymore. <br/>
+    ///         The reason for why we need such limitation is the topologic structure of a service *must*
+    ///         be defined before the framework start serving traffic. Which means, we do not allow the
+    ///         node change it's layout after the initialization pharse. <br/>
+    ///         Also, the pipe can be defined with different properties. The properties can be changed at
+    ///         the execution pharse for *only that exuection*. Which means you can not preserve the pipe
+    ///         flags changed in execution phrase.
     /// @note This function must be called by the **init** function in servlet
     /// @param name the name to this pipe
     /// @param flag the flag to create this pipe
@@ -1945,17 +1943,17 @@ pub struct runtime_api_address_table_t {
         ) -> runtime_api_pipe_t,
     >,
     /// @brief setup the hook function when the type of pipe is determined. The reason for having this function is
-    /// that we have some generic typed servlet. So the type of the pipe is depends on the context of the service
-    /// graph, rather than the servlet itself. So that we do not know the concrete type of the generic pipe until
-    /// we finished the type inference. <br/>
-    /// However, we don't want to query the type info in exeuction time, because of the perofmrance consideration.
-    /// So we should have some mechanism so that we can initialize the type specified information before the servlet
-    /// actually started.
+    ///        that we have some generic typed servlet. So the type of the pipe is depends on the context of the service
+    ///        graph, rather than the servlet itself. So that we do not know the concrete type of the generic pipe until
+    ///        we finished the type inference. <br/>
+    ///        However, we don't want to query the type info in exeuction time, because of the perofmrance consideration.
+    ///        So we should have some mechanism so that we can initialize the type specified information before the servlet
+    ///        actually started.
     /// @param callback the callback function pointer
     /// @param pipe     the pipe descriptor we want to set the callback
     /// @param data     the additional data to be passed to the callback function
     /// @note  Because the type inferrer only work on the assigned pipes, so even though the type of unassigned pipes are known
-    /// the callback function won't be called.
+    ///        the callback function won't be called.
     /// @return status code
     /// @todo implement this
     pub set_type_hook: ::std::option::Option<
@@ -1994,7 +1992,7 @@ pub struct runtime_api_address_table_t {
     /// @param pipe the pipe to write
     /// @param token the token
     /// @param data_req the data request callback, see the type documentation for the details about the data request mechanism.
-    /// If the data request is not desired, pass just NULL. During this time, no pointer's ownership will be taken
+    ///                 If the data request is not desired, pass just NULL. During this time, no pointer's ownership will be taken
     /// @note this function will make sure that all the bytes for this token is written to the pipe
     /// @return status code
     pub write_scope_token: ::std::option::Option<
@@ -2033,7 +2031,7 @@ pub struct runtime_api_address_table_t {
     >,
     /// @brief the pipe control API
     /// @note this function is used to control pipe behaviour, like POSIX API fcntl. This function
-    /// modifies the current pipe instance only, and do not affect any other pipe instnaces.
+    ///       modifies the current pipe instance only, and do not affect any other pipe instnaces.
     /// @param pipe the target pipe
     /// @param opcode what operation needs to be perfomed
     /// @param ap the va params
@@ -2062,34 +2060,34 @@ pub struct runtime_api_address_table_t {
     /// @param path the path to the module suffix, for example all the TLS module should use "pipe.tls"
     /// @param result the result prefix, if there's no module instace under the given path, the result will be set to ERROR_CODE(uint8_t)
     /// @note The reason why we need this function is: <br/>
-    /// 1. The module is dynmaically loaded, so the module id is determined in runtime <br/>
-    /// 2. The servlet API is module-implementation-transparent, which means we cannot put any pipe implementation specified code in the
-    /// servlet code <br/>
-    /// In some cases, we may have serveral module instatiated from the same module binary
-    /// with different module initializtion param.
-    /// In this case, if we need to call the module specified control opcode, we *have to* know
-    /// the module id, because the opcode for module specified opcode is &lt;module-id, module-specfied-opcode&gt; <br/>
-    /// The module id can be get from mod_open call, however, it requires a full path to the module instance. This
-    /// makes the details of the pipe not transparent to the servlet. <br/>
-    /// For example, in code we may want to disable the TLS encrpytion because of the oppurtunistic encryption.
-    /// On the server which is configured the TLS module is listening to the port 443. With mod_open call, we have to
-    /// make the code like:
-    /// \code{.c}
-    /// uint8_t mod = mod_open("pipe.tls.pipe.tcp.port_443");
-    /// uint32_t opcode = (mod << 24) | (OPCODE_WE_WANT);
-    /// pipe_cntl(pipe, opcode, ....);
-    /// \endcode
-    /// As we can see from the code, once the port gets changed, the servlet doesn't work anymore.
-    /// So it's not pipe transparent. <br/>
-    /// To address this issue, we actually use *one representitive of all the module instances that is initialized from the same module binary*.
-    /// Because all the module binary are the same, so the ITC framework will be able to call the correct module binary.
-    /// At the same time, because the pipe itself has a reference to the module instance context, so the call will be forwarded correctly. <br/>
-    /// On the other hand, it's reasonable for all the module instance from same binary (e.g. all the TLS modules) to have the same opcode
-    /// because it's reasonable to have all those module instances gets the same opcode. <br/>
-    /// Based on the reason above we need the function that can return a "representitive module instance" for all the module which creates from the
-    /// same module binary. <br/>
-    /// In this function, we need assume that all the module instances under the given path are created from the same module binary.
-    /// If this rule breaks, it will return an error code
+    ///       1. The module is dynmaically loaded, so the module id is determined in runtime <br/>
+    ///       2. The servlet API is module-implementation-transparent, which means we cannot put any pipe implementation specified code in the
+    ///          servlet code <br/>
+    ///       In some cases, we may have serveral module instatiated from the same module binary
+    ///       with different module initializtion param.
+    ///       In this case, if we need to call the module specified control opcode, we *have to* know
+    ///       the module id, because the opcode for module specified opcode is &lt;module-id, module-specfied-opcode&gt; <br/>
+    ///       The module id can be get from mod_open call, however, it requires a full path to the module instance. This
+    ///       makes the details of the pipe not transparent to the servlet. <br/>
+    ///       For example, in code we may want to disable the TLS encrpytion because of the oppurtunistic encryption.
+    ///       On the server which is configured the TLS module is listening to the port 443. With mod_open call, we have to
+    ///       make the code like:
+    ///       \code{.c}
+    ///       	uint8_t mod = mod_open("pipe.tls.pipe.tcp.port_443");
+    ///       	uint32_t opcode = (mod << 24) | (OPCODE_WE_WANT);
+    ///       	pipe_cntl(pipe, opcode, ....);
+    ///       \endcode
+    ///       As we can see from the code, once the port gets changed, the servlet doesn't work anymore.
+    ///       So it's not pipe transparent. <br/>
+    ///       To address this issue, we actually use *one representitive of all the module instances that is initialized from the same module binary*.
+    ///       Because all the module binary are the same, so the ITC framework will be able to call the correct module binary.
+    ///       At the same time, because the pipe itself has a reference to the module instance context, so the call will be forwarded correctly. <br/>
+    ///       On the other hand, it's reasonable for all the module instance from same binary (e.g. all the TLS modules) to have the same opcode
+    ///       because it's reasonable to have all those module instances gets the same opcode. <br/>
+    ///       Based on the reason above we need the function that can return a "representitive module instance" for all the module which creates from the
+    ///       same module binary. <br/>
+    ///       In this function, we need assume that all the module instances under the given path are created from the same module binary.
+    ///       If this rule breaks, it will return an error code
     /// @return status code
     pub mod_cntl_prefix: ::std::option::Option<
         unsafe extern "C" fn(path: *const ::std::os::raw::c_char, result: *mut u8)
@@ -2100,10 +2098,10 @@ pub struct runtime_api_address_table_t {
     pub version: ::std::option::Option<unsafe extern "C" fn() -> *const ::std::os::raw::c_char>,
     /// @brief The async task control function
     /// @note This function is the only plumber API can be called from the async processing thread.
-    /// And we actually have the limit for this function is we should call this function with task context,
-    /// otherwise we should provide the task_handle (The example for this case is the ASYNC_CNTL_OPCODE_NOTIFY_WAIT,
-    /// which we may not call the function from the thread working on the async task. In this case, we just extract
-    /// the async context from the handle
+    ///       And we actually have the limit for this function is we should call this function with task context,
+    ///       otherwise we should provide the task_handle (The example for this case is the ASYNC_CNTL_OPCODE_NOTIFY_WAIT,
+    ///       which we may not call the function from the thread working on the async task. In this case, we just extract
+    ///       the async context from the handle
     /// @todo implement this
     /// @return status code
     pub async_cntl: ::std::option::Option<
@@ -2299,27 +2297,27 @@ fn bindgen_test_layout_runtime_api_address_table_t() {
 }
 /// @brief the data structure used to define a servlet
 /// @note  Instead of checking if the callback fuction is defined to determine if this is an async task. We relies on the
-/// return value of the init function. This is because for the language support servlet, we can not tell if it's a
-/// async servlet or not during the compile time. The only way for us to kown this is get the servlet fully initialized<br/>
-/// If the init function returns RUNTIME_API_INIT_RESULT_SYNC and exec function has been defined, all the async_* function
-/// won't be used any mopre. This case indicates we have a sync servlet. <br/>
-/// If the init function returns RUNTIME_API_INIT_RESULT_ASYNC, asyc_init must be defined
-/// This case indicates we have an async servlet <br/>
-/// The async_exec and async_cleanup function is not necessarily to be defined. Because for some case, we
-/// actually can have a task initialize a async IO form the async_init and set the async task mode to the wait mode
-/// Then we can have an undefined async_exec function, which means we don't need to do anything other than initializing
-/// the IO. <br/>
-/// If the exec function is not defined and init returns RUNTIME_API_INIT_RESULT_SYNC, this indicates we have an sync servlet
-/// with an empty exec function. This is useful when we only have a shadow output for the servlet, for example, dataflow/dup.
+///        return value of the init function. This is because for the language support servlet, we can not tell if it's a
+///        async servlet or not during the compile time. The only way for us to kown this is get the servlet fully initialized<br/>
+///        If the init function returns RUNTIME_API_INIT_RESULT_SYNC and exec function has been defined, all the async_* function
+///        won't be used any mopre. This case indicates we have a sync servlet. <br/>
+///        If the init function returns RUNTIME_API_INIT_RESULT_ASYNC, asyc_init must be defined
+///        This case indicates we have an async servlet <br/>
+///        The async_exec and async_cleanup function is not necessarily to be defined. Because for some case, we
+///        actually can have a task initialize a async IO form the async_init and set the async task mode to the wait mode
+///        Then we can have an undefined async_exec function, which means we don't need to do anything other than initializing
+///        the IO. <br/>
+///        If the exec function is not defined and init returns RUNTIME_API_INIT_RESULT_SYNC, this indicates we have an sync servlet
+///        with an empty exec function. This is useful when we only have a shadow output for the servlet, for example, dataflow/dup.
 /// @todo  When a servlet is loaded we should
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct runtime_api_servlet_def_t {
-    /// < the size of the additional data for this servlet
+    ///< the size of the additional data for this servlet
     pub size: usize,
-    /// < the description of this servlet
+    ///< the description of this servlet
     pub desc: *const ::std::os::raw::c_char,
-    /// < the required API version for this servlet, currently is 0
+    ///< the required API version for this servlet, currently is 0
     pub version: u32,
     /// @brief The function that will be called by the initialize task
     /// @param argc the argument count
@@ -2345,17 +2343,17 @@ pub struct runtime_api_servlet_def_t {
     pub unload: ::std::option::Option<
         unsafe extern "C" fn(data: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int,
     >,
-    /// < The async buffer size
+    ///< The async buffer size
     pub async_buf_size: u32,
     /// @brief The initialization stage of the async task
     /// @param task This is the handle we used to pass to the async_cntl funciton
     /// @param data The servlet local context
     /// @param async_buf The buffer we are going to carry to the async_exec
     /// @note For the async_exec function, we don't allow the servlet access any servlet context,
-    /// because this breaks the thread convention of the worker thread.
-    /// This make the async task has to copy all the required data to the async buf, which is
-    /// complete different memory, and this memory will be the only data the async_exec function
-    /// can access
+    ///       because this breaks the thread convention of the worker thread.
+    ///       This make the async task has to copy all the required data to the async buf, which is
+    ///       complete different memory, and this memory will be the only data the async_exec function
+    ///       can access
     /// @return status code
     pub async_setup: ::std::option::Option<
         unsafe extern "C" fn(
@@ -2365,7 +2363,7 @@ pub struct runtime_api_servlet_def_t {
         ) -> ::std::os::raw::c_int,
     >,
     /// @brief Execute the initialized async task, the only input of the async buf is the async buf
-    /// In this function, all the API calls are disallowed.
+    ///        In this function, all the API calls are disallowed.
     /// @param async_buf The async data buffer
     /// @param task This is the handle we used to pass to the async_cntl funciton
     /// @return status code
@@ -3468,13 +3466,13 @@ fn bindgen_test_layout___const_checker_last_pipe_array_t_pipes() {
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct pipe_init_param_t {
-    /// < The target variable for the pipe dsec
+    ///< The target variable for the pipe dsec
     pub target: *mut pipe_t,
-    /// < The name of the pipe
+    ///< The name of the pipe
     pub name: *const ::std::os::raw::c_char,
-    /// < The flag we should use
+    ///< The flag we should use
     pub flags: pipe_flags_t,
-    /// < The type we use
+    ///< The type we use
     pub type_: *const ::std::os::raw::c_char,
 }
 #[test]
@@ -3710,18 +3708,18 @@ pub type pstd_option_param_type_t = u32;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct pstd_option_param_t {
-    /// < the type of this param
+    ///< the type of this param
     pub type_: pstd_option_param_type_t,
     pub __bindgen_anon_1: pstd_option_param_t__bindgen_ty_1,
 }
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union pstd_option_param_t__bindgen_ty_1 {
-    /// < the integer value
+    ///< the integer value
     pub intval: i64,
-    /// < the double value
+    ///< the double value
     pub doubleval: f64,
-    /// < the string value
+    ///< the string value
     pub strval: *const ::std::os::raw::c_char,
     _bindgen_union_align: u64,
 }
@@ -3807,17 +3805,17 @@ fn bindgen_test_layout_pstd_option_param_t() {
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct pstd_option_data_t {
-    /// < The list of all the options
+    ///< The list of all the options
     pub option_array: *const pstd_option_t,
-    /// < The current option we are talking about
+    ///< The current option we are talking about
     pub current_option: *const pstd_option_t,
-    /// < The array that contains the parameter for this option
+    ///< The array that contains the parameter for this option
     pub param_array: *mut pstd_option_param_t,
-    /// < The size of the option array
+    ///< The size of the option array
     pub option_array_size: u32,
-    /// < The size of the parameter array
+    ///< The size of the parameter array
     pub param_array_size: u32,
-    /// < The additional callback function data
+    ///< The additional callback function data
     pub cb_data: *mut ::std::os::raw::c_void,
 }
 #[test]
@@ -3906,25 +3904,25 @@ pub type pstd_option_handler_t =
     ::std::option::Option<unsafe extern "C" fn(data: pstd_option_data_t) -> ::std::os::raw::c_int>;
 /// @brief describe a single option
 /// @note the pattern should be written like "III" ==> expecting there are three interger <br/>
-/// For optional param use * as prefix "?III" ==> an optional param with 3 integer<br/>
-/// I = integer <br/>
-/// D = double <br/>
-/// S = string <br/>
-/// All the param should be seperated with  &lt;space&gt; or &lt;tab&gt;
+///       For optional param use * as prefix "?III" ==> an optional param with 3 integer<br/>
+///       I = integer <br/>
+///       D = double <br/>
+///       S = string <br/>
+///       All the param should be seperated with  &lt;space&gt; or &lt;tab&gt;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _pstd_option_t {
-    /// < the long option
+    ///< the long option
     pub long_opt: *const ::std::os::raw::c_char,
-    /// < the short option
+    ///< the short option
     pub short_opt: ::std::os::raw::c_char,
-    /// < the value pattern
+    ///< the value pattern
     pub pattern: *const ::std::os::raw::c_char,
-    /// < the option description
+    ///< the option description
     pub description: *const ::std::os::raw::c_char,
-    /// < the handler of this option
+    ///< the handler of this option
     pub handler: pstd_option_handler_t,
-    /// < the additional argument passed to the handler
+    ///< the additional argument passed to the handler
     pub args: *mut ::std::os::raw::c_void,
 }
 #[test]
@@ -4093,25 +4091,25 @@ pub type pstd_scope_stream_t = _pstd_scope_stream_t;
 extern "C" {
     /// @brief add a new pointer to the scope managed pointer infrastructure
     /// @details Once this function gets called, the memory will be assigned with an integer token, then the servlet
-    /// will be able to write the token to pipe, and the downstream servlet will be able to get the pointer
-    /// by the token in the pipe. <br/>
-    /// The memory will be automatically disposed after the request is done. <br/>
-    /// This function will take the ownership of the pointer mem, so do not dispose the pointer once the function
-    /// returns successfully
+    ///          will be able to write the token to pipe, and the downstream servlet will be able to get the pointer
+    ///          by the token in the pipe. <br/>
+    ///          The memory will be automatically disposed after the request is done. <br/>
+    ///          This function will take the ownership of the pointer mem, so do not dispose the pointer once the function
+    ///          returns successfully
     /// @param entity the scope entity to add
     /// @note  the entity parameter do not pass the ownership of the entity, however, entity->data will be taken if
-    /// the function retuens successfully
+    ///        the function retuens successfully
     /// @return  the token for the pointer or error code
     pub fn pstd_scope_add(entity: *const scope_entity_t) -> scope_token_t;
 }
 extern "C" {
     /// @brief Copy the existing token
     /// @details this function will make a copy of the existing memory by calling its copy callback, and then assign it with
-    /// a new scope token. This should be used if the shared memory needs to be changed, because we want to make sure
-    /// that the result shouldn't be related to the servlet execution order. However, if there are two servlets needs
-    /// to change the same pointer, it's possible that the previous one will be overridden by the latter one. So we
-    /// need to make sure each of the servlet make their own copy before the change. <br/>
-    /// And this guareentee the reuslt is not related to the execution order
+    ///         a new scope token. This should be used if the shared memory needs to be changed, because we want to make sure
+    ///         that the result shouldn't be related to the servlet execution order. However, if there are two servlets needs
+    ///         to change the same pointer, it's possible that the previous one will be overridden by the latter one. So we
+    ///         need to make sure each of the servlet make their own copy before the change. <br/>
+    ///         And this guareentee the reuslt is not related to the execution order
     /// @param  token the token to copy
     /// @param  resbuf the result buffer used to return the pointer after the copy
     /// @return the token for the copied pointer or error code
@@ -4168,13 +4166,13 @@ extern "C" {
 }
 /// @brief The object that is managed by reference counter
 /// @note Once a RLS object entity is committed in this way, the object will be tracked
-/// by the reference counter, once the reference counter becomes 0, the object will
-/// be disposed autoamtically. After that the scope token will be invalidate.
-/// This is useful if we need some RLS that is used as the temp buffer.
+///       by the reference counter, once the reference counter becomes 0, the object will
+///       be disposed autoamtically. After that the scope token will be invalidate.
+///       This is useful if we need some RLS that is used as the temp buffer.
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct pstd_scope_gc_obj_t {
-    /// < The actual data object
+    ///< The actual data object
     pub obj: *const ::std::os::raw::c_void,
 }
 #[test]
@@ -4215,7 +4213,7 @@ extern "C" {
 extern "C" {
     /// @brief Acquire the scope object from the sccope
     /// @note If the RLS object is committed by pstd_scope_gc_add, this function
-    /// should be used to retrive the scope object.
+    ///       should be used to retrive the scope object.
     /// @param token The target token
     /// @return The gc object
     pub fn pstd_scope_gc_get(token: scope_token_t) -> *mut pstd_scope_gc_obj_t;
@@ -4241,12 +4239,12 @@ pub type pstd_onexit_callback_t =
 extern "C" {
     /// @brief register the callback function that will be called when the libplumber exits, this require pssm loaded
     /// @details if there are multiple callback is registered in the system, the callback function will be called the
-    /// last registered function first. (The callback list is a stack)
+    ///          last registered function first. (The callback list is a stack)
     /// @param callback the callback function
     /// @param data the optional addtional data
     /// @note the callback may also responsible to dispose the data pointer if the data pointer requires a free <br/>
-    /// If the function returns a failure, the data pointer may need to be disposed by the caller because the ownership
-    /// isn't taken unless it returns a success
+    ///       If the function returns a failure, the data pointer may need to be disposed by the caller because the ownership
+    ///       isn't taken unless it returns a success
     /// @return status code
     pub fn pstd_onexit(
         callback: pstd_onexit_callback_t,
@@ -4262,7 +4260,7 @@ pub struct _pstd_fcache_file_t {
 pub type pstd_fcache_file_t = _pstd_fcache_file_t;
 extern "C" {
     /// @brief open a given file from the file cache, if the cache hits, we return the reference to cache entry.
-    /// otherwise we will allocate a new cache entry and return a reference to the entry that entry
+    ///        otherwise we will allocate a new cache entry and return a reference to the entry that entry
     /// @param filename the file name that we want to access on the disk
     /// @return status code
     pub fn pstd_fcache_open(filename: *const ::std::os::raw::c_char) -> *mut pstd_fcache_file_t;
@@ -4307,7 +4305,7 @@ extern "C" {
 }
 extern "C" {
     /// @brief access the file metadata through the cache system, if the file information is prevoiusly cached
-    /// just directly return and do not call the disk IO function
+    ///        just directly return and do not call the disk IO function
     /// @param filename the filename to access
     /// @param buf the result buffer
     /// @return status code
@@ -4334,9 +4332,9 @@ pub type pstd_dfa_t = _pstd_dfa_t;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct pstd_dfa_process_param_t {
-    /// < The state variable
+    ///< The state variable
     pub state: *mut ::std::os::raw::c_void,
-    /// < Current DFA object
+    ///< Current DFA object
     pub dfa: *mut pstd_dfa_t,
     pub data: *mut ::std::os::raw::c_void,
 }
@@ -4463,13 +4461,13 @@ fn bindgen_test_layout_pstd_dfa_ops_t() {
         )
     );
 }
-/// < Something wrong with the DFA
+///< Something wrong with the DFA
 pub const pstd_dfa_state_t_PSTD_DFA_ERROR: pstd_dfa_state_t = -1;
-/// < The DFA is currently stopped normally
+///< The DFA is currently stopped normally
 pub const pstd_dfa_state_t_PSTD_DFA_FINISHED: pstd_dfa_state_t = 0;
-/// < The DFA has exhuasted the pipe data but still not reach the finished state
+///< The DFA has exhuasted the pipe data but still not reach the finished state
 pub const pstd_dfa_state_t_PSTD_DFA_EXHUASTED: pstd_dfa_state_t = 1;
-/// < The DFA is currently waiting for more data, in this case the servlet shouldn't touch any pipe and return
+///< The DFA is currently waiting for more data, in this case the servlet shouldn't touch any pipe and return
 pub const pstd_dfa_state_t_PSTD_DFA_WAITING: pstd_dfa_state_t = 2;
 /// @brief represent the state of the DFA
 pub type pstd_dfa_state_t = i32;
@@ -4498,7 +4496,7 @@ pub struct _pstd_type_model_t {
     _unused: [u8; 0],
 }
 /// @brief The servlet context object used to tack the type information for all the pipe
-/// for one servlet intance
+///        for one servlet intance
 pub type pstd_type_model_t = _pstd_type_model_t;
 /// @brief The reference to an accessor in the type model
 pub type pstd_type_accessor_t = u32;
@@ -4513,9 +4511,9 @@ pub type pstd_type_instance_t = _pstd_type_instance_t;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct pstd_type_field_t {
-    /// < The offeset of this field
+    ///< The offeset of this field
     pub offset: u32,
-    /// < The size of memory region for this field
+    ///< The size of memory region for this field
     pub size: u32,
     pub _bitfield_1: __BindgenBitfieldUnit<[u8; 1usize], u8>,
     pub __bindgen_padding_0: [u8; 3usize],
@@ -4671,14 +4669,15 @@ pub type pstd_type_assertion_t = ::std::option::Option<
     ) -> ::std::os::raw::c_int,
 >;
 /// @brief The callback function for type check has been completed done.
-/// This function is called when the analysis on current pipe is completed done.
+///        This function is called when the analysis on current pipe is completed done.
 /// @detail This is useful when we want to validate the type shape of a field, because we cannot use type assertion,
-/// since we call the type assertion before all the accessor has been resolved.
-/// In addition the type assertion is served as the assertion on pipe. So it's a bad idea that we check the
-/// field information in the function.
-/// That is why we need such a callback.
-/// Unlike the type assertion, this callback is actually called after everything for this pipe is done.
-/// And the accessor layout is not allowed to change.
+///         since we call the type assertion before all the accessor has been resolved.
+///         In addition the type assertion is served as the assertion on pipe. So it's a bad idea that we check the
+///         field information in the function.
+///         That is why we need such a callback.
+///         Unlike the type assertion, this callback is actually called after everything for this pipe is done.
+///         And the accessor layout is not allowed to change.
+/// @param pipe The pipe descriptor for which the framework called the callback function.
 /// @param data The additional data we want to pass to this function
 /// @return status code (if this function returns an error, type check would fail)
 pub type pstd_type_checked_callback_t = ::std::option::Option<
@@ -4710,16 +4709,16 @@ extern "C" {
 extern "C" {
     /// @brief Get the field information about a field.
     /// @details This is similar to pstd_type_model_get_accessor, but instead of returning an accessor
-    /// it will set the type information to the given memory location. <br/>
-    /// This is not useful when we want to handle the actual pipe type, for example "plumber/std/request_local/String", etc.
-    /// However, this function is important for operating inner types of a ecapsulated type.
-    /// Since a ecapsulated type, for example "plumber/std/request_local/Array SomeType"
-    /// If we want to access a field in SomeType, the accessor won't work.
-    /// The semantics of encapsulated type means the data from the pipe contains enough information to reconstruct a instance
-    /// of inner type. Which means, the inner type might be in some other memory buffer the servlet allocates.
-    /// Thus, we need type information instead of accessor to access the in memory data field, rather than from the pipe directly. <br/>
-    /// Another difference of this function is it allows the access of the inner type. For example, we want to access SomeType.some_field
-    /// from the array, we need to use "*some_field" for this purpose, the first star indicates we are asking about the inner type
+    ///          it will set the type information to the given memory location. <br/>
+    ///          This is not useful when we want to handle the actual pipe type, for example "plumber/std/request_local/String", etc.
+    ///          However, this function is important for operating inner types of a ecapsulated type.
+    ///          Since a ecapsulated type, for example "plumber/std/request_local/Array SomeType"
+    ///          If we want to access a field in SomeType, the accessor won't work.
+    ///          The semantics of encapsulated type means the data from the pipe contains enough information to reconstruct a instance
+    ///          of inner type. Which means, the inner type might be in some other memory buffer the servlet allocates.
+    ///          Thus, we need type information instead of accessor to access the in memory data field, rather than from the pipe directly. <br/>
+    ///          Another difference of this function is it allows the access of the inner type. For example, we want to access SomeType.some_field
+    ///          from the array, we need to use "*some_field" for this purpose, the first star indicates we are asking about the inner type
     /// @param   model The type model to query
     /// @param   pipe  The pipe descriptor
     /// @param   field_expr The field epxression we want to query
@@ -4764,10 +4763,10 @@ extern "C" {
 }
 extern "C" {
     /// @brief Add a directive indicates the to pipe contains a copy of from pipe when each time the servlet
-    /// gets exectuted
+    ///        gets exectuted
     /// @details This function is typically useful when we needs to performe some modification to the typed header
-    /// and build an output based on this. <br/>
-    /// This requires the type of from pipe is actually a sub-type of to pipe.
+    ///          and build an output based on this. <br/>
+    ///          This requires the type of from pipe is actually a sub-type of to pipe.
     /// @param from The from pipe
     /// @param to   The to pipe
     /// @return status code
@@ -4822,9 +4821,9 @@ extern "C" {
     /// @param bufsize  The size of the buffer
     /// @return Status code
     /// @note Because this function will guarentee all the byte will be written to the buffer, so
-    /// we do not provide the return value of how many bytes has been written. <br/>
-    /// If the buffer size is larger than the size of the memory regoin the accessor refer to
-    /// we just simple drop the extra data
+    ///       we do not provide the return value of how many bytes has been written. <br/>
+    ///       If the buffer size is larger than the size of the memory regoin the accessor refer to
+    ///       we just simple drop the extra data
     pub fn pstd_type_instance_write(
         inst: *mut pstd_type_instance_t,
         accessor: pstd_type_accessor_t,
@@ -4868,32 +4867,32 @@ extern "C" {
 pub struct pstd_type_model_init_param_t {
     pub _bitfield_1: __BindgenBitfieldUnit<[u8; 1usize], u8>,
     pub __bindgen_anon_1: pstd_type_model_init_param_t__bindgen_ty_1,
-    /// < The field accessor
+    ///< The field accessor
     pub field_expr: *const ::std::os::raw::c_char,
-    /// < The target pipe
+    ///< The target pipe
     pub pipe: pipe_t,
-    /// < The file name
+    ///< The file name
     pub filename: *const ::std::os::raw::c_char,
-    /// < The line
+    ///< The line
     pub line: u32,
-    /// < The pipe name
+    ///< The pipe name
     pub pipe_name: *const ::std::os::raw::c_char,
 }
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union pstd_type_model_init_param_t__bindgen_ty_1 {
-    /// < The buffer used for the field accessor
+    ///< The buffer used for the field accessor
     pub accessor_buf: *mut pstd_type_accessor_t,
-    /// < The constant buffer
+    ///< The constant buffer
     pub const_buf: pstd_type_model_init_param_t__bindgen_ty_1__bindgen_ty_1,
     _bindgen_union_align: [u64; 2usize],
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct pstd_type_model_init_param_t__bindgen_ty_1__bindgen_ty_1 {
-    /// < The target address
+    ///< The target address
     pub target_addr: *mut ::std::os::raw::c_void,
-    /// < The size of the constant
+    ///< The size of the constant
     pub const_size: u32,
     pub _bitfield_1: __BindgenBitfieldUnit<[u8; 1usize], u8>,
     pub __bindgen_padding_0: [u8; 3usize],
@@ -5140,9 +5139,9 @@ extern "C" {
 }
 extern "C" {
     /// @brief Try to read the library configuration dynamically, this can be changed by
-    /// PSS code:
-    /// plumber.std.libconf.&lt;key&gt; = xxxx
-    /// If the system can not tell the value, use the default value provided in the param
+    ///        PSS code:
+    ///        plumber.std.libconf.&lt;key&gt; = xxxx
+    ///        If the system can not tell the value, use the default value provided in the param
     /// @param key The key to read
     /// @param default_val The defualt value
     /// @return the value

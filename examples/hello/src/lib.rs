@@ -26,7 +26,7 @@ impl Bootstrap for Bootstrapper {
     type AsyncServletType = Unimplemented;
     fn get(_args : &[&str]) -> BootstrapResult<Self>
     {
-        return Self::sync(Servlet{});
+        return Self::make_sync(Servlet{});
     }
 }
 

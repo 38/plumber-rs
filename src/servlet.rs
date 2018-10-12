@@ -271,7 +271,7 @@ pub trait Bootstrap where Self : Sized
      *
      * Returns the bootstrap result
      **/
-    fn async(servlet : Self::AsyncServletType) -> BootstrapResult<Self>
+    fn make_async(servlet : Self::AsyncServletType) -> BootstrapResult<Self>
     {
         return BootstrapResult::Success(ServletMode::AsyncMode(servlet));
     }
@@ -283,7 +283,7 @@ pub trait Bootstrap where Self : Sized
      *
      * Returns the bootstrap result
      **/
-    fn sync(servlet : Self::SyncServletType) -> BootstrapResult<Self>
+    fn make_sync(servlet : Self::SyncServletType) -> BootstrapResult<Self>
     {
         return BootstrapResult::Success(ServletMode::SyncMode(servlet));
     }

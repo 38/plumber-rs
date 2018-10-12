@@ -7,8 +7,8 @@
 //! typeing.
 //!
 
-use ::pipe::PipeDescriptor;
-use ::pstd::{
+use crate::pipe::PipeDescriptor;
+use crate::pstd::{
     pstd_type_accessor_t, 
     pstd_type_field_t, 
     pstd_type_model_t, 
@@ -20,7 +20,7 @@ use ::pstd::{
     pstd_type_instance_write
 };
 
-use ::plumber_api_call::get_cstr;
+use crate::plumber_api_call::get_cstr;
 
 use std::marker::PhantomData;
 use std::collections::HashMap;
@@ -47,7 +47,7 @@ impl TypeInstanceObject {
      *
      * Return either the newly created wrapper object or None
      **/
-    pub fn from_raw(raw: *mut ::std::os::raw::c_void) -> Option<TypeInstanceObject>
+    pub fn from_raw(raw: *mut crate::std::os::raw::c_void) -> Option<TypeInstanceObject>
     {
         if !raw.is_null()
         {
@@ -72,7 +72,7 @@ impl TypeInstanceObject {
      **/
     fn read(&mut self,
             acc:pstd_type_accessor_t,
-            buf:*mut ::std::os::raw::c_void,
+            buf:*mut crate::std::os::raw::c_void,
             size: usize) -> bool
     {
         let result = unsafe{ pstd_type_instance_read(self.object, acc, buf, size) };
@@ -93,7 +93,7 @@ impl TypeInstanceObject {
      **/
     fn write(&mut self,
              acc:pstd_type_accessor_t,
-             buf:*const ::std::os::raw::c_void,
+             buf:*const crate::std::os::raw::c_void,
              size:usize) -> bool
     {
         let result = unsafe{ pstd_type_instance_write(self.object, acc, buf, size) };
@@ -161,7 +161,7 @@ impl TypeModelObject {
      *
      * Returns the newly created wrapper object or None
      **/
-    pub fn from_raw(raw : *mut ::std::os::raw::c_void) -> Option<TypeModelObject>
+    pub fn from_raw(raw : *mut crate::std::os::raw::c_void) -> Option<TypeModelObject>
     {
         let inner_obj = raw;
         if !inner_obj.is_null() 
@@ -179,7 +179,7 @@ impl TypeModelObject {
      **/
     fn _add_type_shape_check<T>(&self, 
                                 pipe:PipeDescriptor,
-                                path:*const ::std::os::raw::c_char,
+                                path:*const crate::std::os::raw::c_char,
                                 primitive:&mut Primitive<T>) -> bool
         where T : PrimitiveTypeTag<T> + Default
     {
@@ -198,8 +198,8 @@ impl TypeModelObject {
             phantom: PhantomData
         });
 
-        extern "C" fn _validate_primitive_type_shape<T>(_pipe: ::plumber_api::runtime_api_pipe_t, 
-                                                        data : *mut ::std::os::raw::c_void) -> i32
+        extern "C" fn _validate_primitive_type_shape<T>(_pipe: crate::plumber_api::runtime_api_pipe_t, 
+                                                        data : *mut std::os::raw::c_void) -> i32
             where T : PrimitiveTypeTag<T>+Default
         {
             let check_shape = unsafe{ Box::<TypeShapeChecker<T>>::from_raw(data as *mut TypeShapeChecker<T>) };
@@ -215,7 +215,7 @@ impl TypeModelObject {
         unsafe{ pstd_type_model_on_pipe_type_checked(self.object, 
                                                      pipe, 
                                                      Some(_validate_primitive_type_shape::<T>), 
-                                                     check_shape_ref as *mut ::std::os::raw::c_void) };
+                                                     check_shape_ref as *mut std::os::raw::c_void) };
         return true;
     }
 
@@ -256,7 +256,7 @@ impl TypeModelObject {
 
             let mut new_val = Some(accessor);
 
-            ::std::mem::swap(&mut primitive.accessor, &mut new_val);
+            std::mem::swap(&mut primitive.accessor, &mut new_val);
 
             return true;
         }
@@ -308,7 +308,7 @@ impl <T : PrimitiveTypeTag<T> + Default> Primitive<T> {
             let mut buf_ptr = &mut buf as *mut T;
             let acc = acc_ref.clone();
 
-            if type_inst.read(acc, buf_ptr as *mut ::std::os::raw::c_void, ::std::mem::size_of::<T>())
+            if type_inst.read(acc, buf_ptr as *mut std::os::raw::c_void, std::mem::size_of::<T>())
             {
                 return Some(buf);
             }
@@ -335,7 +335,7 @@ impl <T : PrimitiveTypeTag<T> + Default> Primitive<T> {
             let val_ref = &val;
             let val_ptr = val_ref as *const T;
 
-            if type_inst.write(acc, val_ptr as *mut ::std::os::raw::c_void, ::std::mem::size_of::<T>())
+            if type_inst.write(acc, val_ptr as *mut std::os::raw::c_void, std::mem::size_of::<T>())
             {
                 return true;
             }

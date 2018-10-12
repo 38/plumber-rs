@@ -7,8 +7,8 @@ use std::os::raw::{c_char, c_void};
 use std::ffi::CStr;
 use std::ptr::null;
 use std::rc::Rc;
-use ::servlet::{Unimplemented, AsyncServlet, SyncServlet, ServletMode, ServletFuncResult, Bootstrap, AsyncTaskHandle, fail, BootstrapResult};
-use ::protocol::{TypeModelObject, TypeInstanceObject, Untyped, ProtocolModel, DataModel};
+use crate::servlet::{Unimplemented, AsyncServlet, SyncServlet, ServletMode, ServletFuncResult, Bootstrap, AsyncTaskHandle, fail, BootstrapResult};
+use crate::protocol::{TypeModelObject, TypeInstanceObject, Untyped, ProtocolModel, DataModel};
 
 impl SyncServlet for Unimplemented {
     type ProtocolType = Untyped;

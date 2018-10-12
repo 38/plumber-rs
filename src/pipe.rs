@@ -4,8 +4,8 @@
 //!
 //! This module is the wrapper to the actual Plumber pipe API calls for Pipe IO
 
-use ::plumber_api::{runtime_api_pipe_t, runtime_api_pipe_flags_t};
-use ::plumber_api_call::get_cstr;
+use crate::plumber_api::{runtime_api_pipe_t, runtime_api_pipe_flags_t};
+use crate::plumber_api_call::get_cstr;
 
 use std::io::{Read, Write, Result, Error, ErrorKind};
 use std::os::raw::c_void;
@@ -54,11 +54,11 @@ pub const PIPE_SHADOW   :PipeFlags   = 0x80000;
  **/
 pub const PIPE_DISABLED :PipeFlags   = 0x100000;
 
-const PIPE_CNTL_GET_FLAGS:u32        = ::plumber_api::RUNTIME_API_PIPE_CNTL_OPCODE_GET_FLAGS;
-const PIPE_CNTL_SET_FLAG:u32         = ::plumber_api::RUNTIME_API_PIPE_CNTL_OPCODE_SET_FLAG;
-const PIPE_CNTL_CLR_FLAG:u32         = ::plumber_api::RUNTIME_API_PIPE_CNTL_OPCODE_CLR_FLAG;
-const PIPE_CNTL_PUSH_STATE:u32       = ::plumber_api::RUNTIME_API_PIPE_CNTL_OPCODE_PUSH_STATE;
-const PIPE_CNTL_POP_STATE:u32        = ::plumber_api::RUNTIME_API_PIPE_CNTL_OPCODE_POP_STATE;
+const PIPE_CNTL_GET_FLAGS:u32        = crate::plumber_api::RUNTIME_API_PIPE_CNTL_OPCODE_GET_FLAGS;
+const PIPE_CNTL_SET_FLAG:u32         = crate::plumber_api::RUNTIME_API_PIPE_CNTL_OPCODE_SET_FLAG;
+const PIPE_CNTL_CLR_FLAG:u32         = crate::plumber_api::RUNTIME_API_PIPE_CNTL_OPCODE_CLR_FLAG;
+const PIPE_CNTL_PUSH_STATE:u32       = crate::plumber_api::RUNTIME_API_PIPE_CNTL_OPCODE_PUSH_STATE;
+const PIPE_CNTL_POP_STATE:u32        = crate::plumber_api::RUNTIME_API_PIPE_CNTL_OPCODE_POP_STATE;
 
 
 struct PipeCntlData {
@@ -67,12 +67,12 @@ struct PipeCntlData {
     result: i32
 }
 
-extern "C" fn invoke_pipe_cntl(ap:*mut ::va_list_helper::__va_list_tag, data_ptr:*mut c_void)
+extern "C" fn invoke_pipe_cntl(ap:*mut crate::va_list_helper::__va_list_tag, data_ptr:*mut c_void)
 {
     if let Some(data) = unsafe { (data_ptr as *mut PipeCntlData).as_mut() }
     {
         plumber_api_call! {
-            let result = cntl(data.pipe, data.opcode, ap as *mut ::plumber_api::__va_list_tag) in 
+            let result = cntl(data.pipe, data.opcode, ap as *mut crate::plumber_api::__va_list_tag) in 
             {
                 data.result = result;
             }
@@ -114,7 +114,7 @@ pub struct Pipe<ST> {
     /// The actual pipe descriptor
     pipe : runtime_api_pipe_t,
     /// The phantom data
-    _st  : ::std::marker::PhantomData<ST>
+    _st  : crate::std::marker::PhantomData<ST>
 }
 
 

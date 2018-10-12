@@ -10,7 +10,7 @@ then
 	exit 1
 fi
 
-bindgen() {
+call-bindgen() {
 	header=$1
 	out=$(basename ${header} .h)_binding.rs
 	echo "[BINDGEN] ${out}" >&2
@@ -18,6 +18,6 @@ bindgen() {
 	${BINDGEN} include/${header} -- ${CFLAGS} $@ > $(dirname $0)/generated/${out} || exit 1
 }
 
-bindgen plumber_api.h -I ${PLUMBER_PREFIX}/include/pservlet
-bindgen va_list_helper.h
-bindgen pstd.h -I ${PLUMBER_PREFIX}/include/pstd -I ${PLUMBER_PREFIX}/include/pservlet
+call-bindgen plumber_api.h -I ${PLUMBER_PREFIX}/include/pservlet
+call-bindgen va_list_helper.h
+call-bindgen pstd.h -I ${PLUMBER_PREFIX}/include/pstd -I ${PLUMBER_PREFIX}/include/pservlet

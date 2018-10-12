@@ -124,7 +124,7 @@ impl<T> __IncompleteArrayField<T> {
     }
 }
 impl<T> ::std::fmt::Debug for __IncompleteArrayField<T> {
-    fn fmt(&self, fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+    fn fmt(&self, fmt: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         fmt.write_str("__IncompleteArrayField")
     }
 }
@@ -143,7 +143,7 @@ pub const __USE_ISOC99: u32 = 1;
 pub const __USE_ISOC95: u32 = 1;
 pub const __USE_POSIX_IMPLICITLY: u32 = 1;
 pub const _POSIX_SOURCE: u32 = 1;
-pub const _POSIX_C_SOURCE: u32 = 200809;
+pub const _POSIX_C_SOURCE: f64 = 200809.0;
 pub const __USE_POSIX: u32 = 1;
 pub const __USE_POSIX2: u32 = 1;
 pub const __USE_POSIX199309: u32 = 1;
@@ -157,7 +157,7 @@ pub const __USE_FORTIFY_LEVEL: u32 = 0;
 pub const _STDC_PREDEF_H: u32 = 1;
 pub const __STDC_IEC_559__: u32 = 1;
 pub const __STDC_IEC_559_COMPLEX__: u32 = 1;
-pub const __STDC_ISO_10646__: u32 = 201505;
+pub const __STDC_ISO_10646__: f64 = 201505.0;
 pub const __STDC_NO_THREADS__: u32 = 1;
 pub const __GNU_LIBRARY__: u32 = 6;
 pub const __GLIBC__: u32 = 2;
@@ -186,19 +186,19 @@ pub const UINT_LEAST8_MAX: u32 = 255;
 pub const UINT_LEAST16_MAX: u32 = 65535;
 pub const UINT_LEAST32_MAX: u32 = 4294967295;
 pub const INT_FAST8_MIN: i32 = -128;
-pub const INT_FAST16_MIN: i64 = -9223372036854775808;
-pub const INT_FAST32_MIN: i64 = -9223372036854775808;
+pub const INT_FAST16_MIN: f64 = -9223372036854776000.0;
+pub const INT_FAST32_MIN: f64 = -9223372036854776000.0;
 pub const INT_FAST8_MAX: u32 = 127;
-pub const INT_FAST16_MAX: u64 = 9223372036854775807;
-pub const INT_FAST32_MAX: u64 = 9223372036854775807;
+pub const INT_FAST16_MAX: f64 = 9223372036854776000.0;
+pub const INT_FAST32_MAX: f64 = 9223372036854776000.0;
 pub const UINT_FAST8_MAX: u32 = 255;
 pub const UINT_FAST16_MAX: i32 = -1;
 pub const UINT_FAST32_MAX: i32 = -1;
-pub const INTPTR_MIN: i64 = -9223372036854775808;
-pub const INTPTR_MAX: u64 = 9223372036854775807;
+pub const INTPTR_MIN: f64 = -9223372036854776000.0;
+pub const INTPTR_MAX: f64 = 9223372036854776000.0;
 pub const UINTPTR_MAX: i32 = -1;
-pub const PTRDIFF_MIN: i64 = -9223372036854775808;
-pub const PTRDIFF_MAX: u64 = 9223372036854775807;
+pub const PTRDIFF_MIN: f64 = -9223372036854776000.0;
+pub const PTRDIFF_MAX: f64 = 9223372036854776000.0;
 pub const SIG_ATOMIC_MIN: i32 = -2147483648;
 pub const SIG_ATOMIC_MAX: u32 = 2147483647;
 pub const SIZE_MAX: i32 = -1;
@@ -286,23 +286,23 @@ pub type __gnuc_va_list = __builtin_va_list;
 /// @brief the type used to the pipe ID
 pub type runtime_api_pipe_id_t = u16;
 /// @brief the type used to represent a pipe object, either a real pipe or a reference
-/// to a module function
+///        to a module function
 /// @note there are two different memory layout for this type <br/>
-/// a) 11111111 00000000 pppppppp pppppppp <br/>
-/// This is used when we refer a pipe id <br/>
-/// b) mmmmmmmm oooooooo oooooooo oooooooo <br/>
-/// This is used when we refer a service module function
+///       a) 11111111 00000000 pppppppp pppppppp <br/>
+///          This is used when we refer a pipe id <br/>
+///       b) mmmmmmmm oooooooo oooooooo oooooooo <br/>
+///          This is used when we refer a service module function
 pub type runtime_api_pipe_t = u32;
 /// @brief the type used for the pipe define flags
-/// @note the bit layout of a pipe flags is  <br/>
-/// rrrrrrrr rrrDsapd tttttttt tttttttt <br/>
-/// D = disabled <br/>
-/// s = Shadow Pipe <br/>
-/// a = Async Pipe <br/>
-/// r = Reserved <br/>
-/// p = Presist  <br/>
-/// d = Pipe direction <br/>
-/// t = Target Pipe <br/>
+///  @note the bit layout of a pipe flags is  <br/>
+///        rrrrrrrr rrrDsapd tttttttt tttttttt <br/>
+///        D = disabled <br/>
+///        s = Shadow Pipe <br/>
+///        a = Async Pipe <br/>
+///        r = Reserved <br/>
+///        p = Presist  <br/>
+///        d = Pipe direction <br/>
+///        t = Target Pipe <br/>
 pub type runtime_api_pipe_flags_t = u32;
 #[repr(C)]
 #[derive(Debug)]
@@ -770,15 +770,15 @@ fn bindgen_test_layout___const_checker_eq___non_module_related_pop_state__() {
 /// @brief the token used to request local scope token
 pub type runtime_api_scope_token_t = u32;
 /// @brief The event description of the event driven scope stream. Which is actually a file descriptor and
-/// when the file descriptor should be treated as the stream gets ready
-/// If both read and write is 0, it means we want to remove the event from the module
+///        when the file descriptor should be treated as the stream gets ready
+///        If both read and write is 0, it means we want to remove the event from the module
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct runtime_api_scope_ready_event_t {
-    /// < The FD that is used for event notification
+    ///< The FD that is used for event notification
     pub fd: ::std::os::raw::c_int,
     pub _bitfield_1: __BindgenBitfieldUnit<[u8; 1usize], u8>,
-    /// < The time limit for the RLS token not gets ready
+    ///< The time limit for the RLS token not gets ready
     pub timeout: i32,
 }
 #[test]
@@ -857,11 +857,11 @@ impl runtime_api_scope_ready_event_t {
     }
 }
 /// @brief Represent an entity in the scope. It's actually a group of callback function for the opeartion
-/// that is supported by the scope entity and a memory address which represent the entity data
+///        that is supported by the scope entity and a memory address which represent the entity data
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct runtime_api_scope_entity_t {
-    /// < the actual pointer
+    ///< the actual pointer
     pub data: *mut ::std::os::raw::c_void,
     /// @brief the callback function used to copy the memory
     /// @param ptr the pointer to copy
@@ -878,15 +878,15 @@ pub struct runtime_api_scope_entity_t {
     >,
     /// @brief the callback function used to open the rscope pointer as a byte stream
     /// @note this is the callback function is used to serialize the RLS memory info a
-    /// byte stream. This feature is used for the framework to write a serialized
-    /// RLS directly to the pipe, which means we do not needs high level user-space
-    /// program to handle this. <br/>
-    /// The reason for why we have this is, without this mechanism,
-    /// when we build a file server, we need to read the file content into a mem pipe,
-    /// and then copy the mem pipe to async buffer and then write it to the socket.
-    /// Most of the operations are unncessary. By introducing the file RLS, and this
-    /// byte stream interface, we will be able to read the file from the async write loop
-    /// directly. In this way, we can elimite the memory copy completely. <br/>
+    ///       byte stream. This feature is used for the framework to write a serialized
+    ///       RLS directly to the pipe, which means we do not needs high level user-space
+    ///       program to handle this. <br/>
+    ///       The reason for why we have this is, without this mechanism,
+    ///       when we build a file server, we need to read the file content into a mem pipe,
+    ///       and then copy the mem pipe to async buffer and then write it to the socket.
+    ///       Most of the operations are unncessary. By introducing the file RLS, and this
+    ///       byte stream interface, we will be able to read the file from the async write loop
+    ///       directly. In this way, we can elimite the memory copy completely. <br/>
     /// @param ptr the RLS pointer to open
     /// @return the byte stream handle, which is the state variable for the serialization, NULL on error case
     pub open_func: ::std::option::Option<
@@ -898,8 +898,8 @@ pub struct runtime_api_scope_entity_t {
     /// @param bufsize the buffer size
     /// @return the bytes has been read to buffer, or error code
     /// @note If this function returns 0, it may indicates the stream is waiting for resource gets ready
-    /// In this case, if the user supports event driven interface, it may call event_func for the
-    /// event description that hints the availibility of the stream.
+    ///       In this case, if the user supports event driven interface, it may call event_func for the
+    ///       event description that hints the availibility of the stream.
     pub read_func: ::std::option::Option<
         unsafe extern "C" fn(
             handle: *mut ::std::os::raw::c_void,
@@ -917,7 +917,7 @@ pub struct runtime_api_scope_entity_t {
     /// @param handle The stream handle
     /// @param event_buf The buffer used to return the event
     /// @return Number of event has been registered, 0 if no event should be registered, 1 for needs to register one
-    /// event and error code for all the error cases
+    ///         event and error code for all the error cases
     pub event_func: ::std::option::Option<
         unsafe extern "C" fn(
             handle: *mut ::std::os::raw::c_void,
@@ -1040,47 +1040,47 @@ fn bindgen_test_layout_runtime_api_scope_entity_t() {
     );
 }
 /// @brief describe the param for the request that ask for the write_token API consume the
-/// token data in the way specified by this
+///        token data in the way specified by this
 /// @details Problem: This mechanism is used to address the problem that the directly RLS token access interface
-/// is not buffer friendly. Consider we use an BIO object to write the pipe, so all the data that has written
-/// to pipe via BIO is bufferred in the BIO buffer. After this, if we want to write a RLS token, the BIO buffer
-/// has to flush no matter if it's full or not. <br/>
-/// Because the write_token call do not aware of the BIO buffer, so it will write the data directly, however all
-/// the bufferred BIO data which should be written before the token is now after the token content. <br/>
-/// However, this additional flush causes serious problem. Because we have to flush the buffer once the write_token has
-/// been called. For example, previously, we will be able to use the bio call like:
-/// <code>
-/// pstd_bio_printf("<div>%s</div>", file_content);
-/// </code>
-/// To write the response which will translate to 1 pipe_write of course, however, by introducing the DRA, we should use:
-/// <code>
-/// pstd_bio_printf("<div>");
-/// pstd_bio_write_token(file_token);
-/// pstd_bio_printf("</div>");
-/// </code>
-/// Which actually needs to translate to 3 pipe_write, which turns out to be 3 syscalls. <br/>
-/// This causes a huge performance downgrade from 115K Req/sec to 68K req/sec for the user-agent echo back server.
-/// Solution: This is the descriptor that request the first N bytes from the RLS token stream, and this data will be passed in
-/// to the callback provided by the caller of write_token, by having this callback, the caller (which is PSTD BIO of course),
-/// will have a last chance to fill the unused buffer. If the stream is exhuasted by the data request, no underlying DRA will
-/// happen, otherwise, the DRA will handle the remaining portion of the stream. <br/>
-/// If the data is exhuasted by the data request and BIO buffer is not full, then the buffer won't flush. In this way, we make
-/// a full use of user-space buffer before we flush it.
+///         is not buffer friendly. Consider we use an BIO object to write the pipe, so all the data that has written
+///         to pipe via BIO is bufferred in the BIO buffer. After this, if we want to write a RLS token, the BIO buffer
+///         has to flush no matter if it's full or not. <br/>
+///         Because the write_token call do not aware of the BIO buffer, so it will write the data directly, however all
+///         the bufferred BIO data which should be written before the token is now after the token content. <br/>
+///         However, this additional flush causes serious problem. Because we have to flush the buffer once the write_token has
+///         been called. For example, previously, we will be able to use the bio call like:
+///         <code>
+///         		pstd_bio_printf("<div>%s</div>", file_content);
+///         </code>
+///         To write the response which will translate to 1 pipe_write of course, however, by introducing the DRA, we should use:
+///         <code>
+///         		pstd_bio_printf("<div>");
+///         		pstd_bio_write_token(file_token);
+///         		pstd_bio_printf("</div>");
+///         </code>
+///         Which actually needs to translate to 3 pipe_write, which turns out to be 3 syscalls. <br/>
+///         This causes a huge performance downgrade from 115K Req/sec to 68K req/sec for the user-agent echo back server.
+///         Solution: This is the descriptor that request the first N bytes from the RLS token stream, and this data will be passed in
+///         to the callback provided by the caller of write_token, by having this callback, the caller (which is PSTD BIO of course),
+///         will have a last chance to fill the unused buffer. If the stream is exhuasted by the data request, no underlying DRA will
+///         happen, otherwise, the DRA will handle the remaining portion of the stream. <br/>
+///         If the data is exhuasted by the data request and BIO buffer is not full, then the buffer won't flush. In this way, we make
+///         a full use of user-space buffer before we flush it.
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct runtime_api_scope_token_data_request_t {
-    /// < The number of bytes we are reqeusting
+    ///< The number of bytes we are reqeusting
     pub size: usize,
-    /// < The caller context of this data request
+    ///< The caller context of this data request
     pub context: *mut ::std::os::raw::c_void,
     /// @brief the callback function that handles the requested data, it may be called multiple times
-    /// once the data_handler returns 0, then it means the data request do not want the data anymore
+    ///        once the data_handler returns 0, then it means the data request do not want the data anymore
     /// @param context the caller defined context
     /// @param data the pointer to the data section
     /// @param count the number of bytes is available at this time
     /// @return the number of bytes handled by this call, if the return value is larger than 0 and the requested size
-    /// limit not reach, then the remaning data from the token stream will keep sent to the handler, until
-    /// it returns an error code or 0
+    ///         limit not reach, then the remaning data from the token stream will keep sent to the handler, until
+    ///         it returns an error code or 0
     pub data_handler: ::std::option::Option<
         unsafe extern "C" fn(
             context: *mut ::std::os::raw::c_void,
@@ -1159,9 +1159,9 @@ pub type runtime_api_pipe_type_callback_t = ::std::option::Option<
         data: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
-/// < This is a sync servlet
+///< This is a sync servlet
 pub const RUNTIME_API_INIT_RESULT_SYNC: _bindgen_ty_1 = 0;
-/// < This is an async servlet
+///< This is an async servlet
 pub const RUNTIME_API_INIT_RESULT_ASYNC: _bindgen_ty_1 = 1;
 /// @brief The return value for the servlet's init function, which indicates the property of the servlet
 pub type _bindgen_ty_1 = u32;
@@ -1211,23 +1211,23 @@ pub struct _runtime_api_async_task_handle_t {
 pub type runtime_api_async_handle_t = _runtime_api_async_task_handle_t;
 /// @brief the address table that contains the address of the pipe APIs
 /// @note we do not need the servlet instance id, because the caller of the exec of the init will definately have the execution info. <br/>
-/// All the function defined in this place can only be called within the servlet context. <br/>
+///       All the function defined in this place can only be called within the servlet context. <br/>
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct runtime_api_address_table_t {
     /// @brief define a named pipe in the PDT of this servlet
     /// @details Define a IO pipe for a servlet. The function will define a pipe for a servlet.
-    /// Which is actually either the input or the output end of a pipe. <br/>
-    /// The function will return a integer called pipe descriptor. The pipe descriptor can be
-    /// used later in the exec function of the servlet as the data source/sink. <br/>
-    /// For the given servlet instance, once the instance is initialized, the servlet can not
-    /// define the pipe anymore. <br/>
-    /// The reason for why we need such limitation is the topologic structure of a service *must*
-    /// be defined before the framework start serving traffic. Which means, we do not allow the
-    /// node change it's layout after the initialization pharse. <br/>
-    /// Also, the pipe can be defined with different properties. The properties can be changed at
-    /// the execution pharse for *only that exuection*. Which means you can not preserve the pipe
-    /// flags changed in execution phrase.
+    ///         Which is actually either the input or the output end of a pipe. <br/>
+    ///         The function will return a integer called pipe descriptor. The pipe descriptor can be
+    ///         used later in the exec function of the servlet as the data source/sink. <br/>
+    ///         For the given servlet instance, once the instance is initialized, the servlet can not
+    ///         define the pipe anymore. <br/>
+    ///         The reason for why we need such limitation is the topologic structure of a service *must*
+    ///         be defined before the framework start serving traffic. Which means, we do not allow the
+    ///         node change it's layout after the initialization pharse. <br/>
+    ///         Also, the pipe can be defined with different properties. The properties can be changed at
+    ///         the execution pharse for *only that exuection*. Which means you can not preserve the pipe
+    ///         flags changed in execution phrase.
     /// @note This function must be called by the **init** function in servlet
     /// @param name the name to this pipe
     /// @param flag the flag to create this pipe
@@ -1241,17 +1241,17 @@ pub struct runtime_api_address_table_t {
         ) -> runtime_api_pipe_t,
     >,
     /// @brief setup the hook function when the type of pipe is determined. The reason for having this function is
-    /// that we have some generic typed servlet. So the type of the pipe is depends on the context of the service
-    /// graph, rather than the servlet itself. So that we do not know the concrete type of the generic pipe until
-    /// we finished the type inference. <br/>
-    /// However, we don't want to query the type info in exeuction time, because of the perofmrance consideration.
-    /// So we should have some mechanism so that we can initialize the type specified information before the servlet
-    /// actually started.
+    ///        that we have some generic typed servlet. So the type of the pipe is depends on the context of the service
+    ///        graph, rather than the servlet itself. So that we do not know the concrete type of the generic pipe until
+    ///        we finished the type inference. <br/>
+    ///        However, we don't want to query the type info in exeuction time, because of the perofmrance consideration.
+    ///        So we should have some mechanism so that we can initialize the type specified information before the servlet
+    ///        actually started.
     /// @param callback the callback function pointer
     /// @param pipe     the pipe descriptor we want to set the callback
     /// @param data     the additional data to be passed to the callback function
     /// @note  Because the type inferrer only work on the assigned pipes, so even though the type of unassigned pipes are known
-    /// the callback function won't be called.
+    ///        the callback function won't be called.
     /// @return status code
     /// @todo implement this
     pub set_type_hook: ::std::option::Option<
@@ -1290,7 +1290,7 @@ pub struct runtime_api_address_table_t {
     /// @param pipe the pipe to write
     /// @param token the token
     /// @param data_req the data request callback, see the type documentation for the details about the data request mechanism.
-    /// If the data request is not desired, pass just NULL. During this time, no pointer's ownership will be taken
+    ///                 If the data request is not desired, pass just NULL. During this time, no pointer's ownership will be taken
     /// @note this function will make sure that all the bytes for this token is written to the pipe
     /// @return status code
     pub write_scope_token: ::std::option::Option<
@@ -1329,7 +1329,7 @@ pub struct runtime_api_address_table_t {
     >,
     /// @brief the pipe control API
     /// @note this function is used to control pipe behaviour, like POSIX API fcntl. This function
-    /// modifies the current pipe instance only, and do not affect any other pipe instnaces.
+    ///       modifies the current pipe instance only, and do not affect any other pipe instnaces.
     /// @param pipe the target pipe
     /// @param opcode what operation needs to be perfomed
     /// @param ap the va params
@@ -1358,34 +1358,34 @@ pub struct runtime_api_address_table_t {
     /// @param path the path to the module suffix, for example all the TLS module should use "pipe.tls"
     /// @param result the result prefix, if there's no module instace under the given path, the result will be set to ERROR_CODE(uint8_t)
     /// @note The reason why we need this function is: <br/>
-    /// 1. The module is dynmaically loaded, so the module id is determined in runtime <br/>
-    /// 2. The servlet API is module-implementation-transparent, which means we cannot put any pipe implementation specified code in the
-    /// servlet code <br/>
-    /// In some cases, we may have serveral module instatiated from the same module binary
-    /// with different module initializtion param.
-    /// In this case, if we need to call the module specified control opcode, we *have to* know
-    /// the module id, because the opcode for module specified opcode is &lt;module-id, module-specfied-opcode&gt; <br/>
-    /// The module id can be get from mod_open call, however, it requires a full path to the module instance. This
-    /// makes the details of the pipe not transparent to the servlet. <br/>
-    /// For example, in code we may want to disable the TLS encrpytion because of the oppurtunistic encryption.
-    /// On the server which is configured the TLS module is listening to the port 443. With mod_open call, we have to
-    /// make the code like:
-    /// \code{.c}
-    /// uint8_t mod = mod_open("pipe.tls.pipe.tcp.port_443");
-    /// uint32_t opcode = (mod << 24) | (OPCODE_WE_WANT);
-    /// pipe_cntl(pipe, opcode, ....);
-    /// \endcode
-    /// As we can see from the code, once the port gets changed, the servlet doesn't work anymore.
-    /// So it's not pipe transparent. <br/>
-    /// To address this issue, we actually use *one representitive of all the module instances that is initialized from the same module binary*.
-    /// Because all the module binary are the same, so the ITC framework will be able to call the correct module binary.
-    /// At the same time, because the pipe itself has a reference to the module instance context, so the call will be forwarded correctly. <br/>
-    /// On the other hand, it's reasonable for all the module instance from same binary (e.g. all the TLS modules) to have the same opcode
-    /// because it's reasonable to have all those module instances gets the same opcode. <br/>
-    /// Based on the reason above we need the function that can return a "representitive module instance" for all the module which creates from the
-    /// same module binary. <br/>
-    /// In this function, we need assume that all the module instances under the given path are created from the same module binary.
-    /// If this rule breaks, it will return an error code
+    ///       1. The module is dynmaically loaded, so the module id is determined in runtime <br/>
+    ///       2. The servlet API is module-implementation-transparent, which means we cannot put any pipe implementation specified code in the
+    ///          servlet code <br/>
+    ///       In some cases, we may have serveral module instatiated from the same module binary
+    ///       with different module initializtion param.
+    ///       In this case, if we need to call the module specified control opcode, we *have to* know
+    ///       the module id, because the opcode for module specified opcode is &lt;module-id, module-specfied-opcode&gt; <br/>
+    ///       The module id can be get from mod_open call, however, it requires a full path to the module instance. This
+    ///       makes the details of the pipe not transparent to the servlet. <br/>
+    ///       For example, in code we may want to disable the TLS encrpytion because of the oppurtunistic encryption.
+    ///       On the server which is configured the TLS module is listening to the port 443. With mod_open call, we have to
+    ///       make the code like:
+    ///       \code{.c}
+    ///       	uint8_t mod = mod_open("pipe.tls.pipe.tcp.port_443");
+    ///       	uint32_t opcode = (mod << 24) | (OPCODE_WE_WANT);
+    ///       	pipe_cntl(pipe, opcode, ....);
+    ///       \endcode
+    ///       As we can see from the code, once the port gets changed, the servlet doesn't work anymore.
+    ///       So it's not pipe transparent. <br/>
+    ///       To address this issue, we actually use *one representitive of all the module instances that is initialized from the same module binary*.
+    ///       Because all the module binary are the same, so the ITC framework will be able to call the correct module binary.
+    ///       At the same time, because the pipe itself has a reference to the module instance context, so the call will be forwarded correctly. <br/>
+    ///       On the other hand, it's reasonable for all the module instance from same binary (e.g. all the TLS modules) to have the same opcode
+    ///       because it's reasonable to have all those module instances gets the same opcode. <br/>
+    ///       Based on the reason above we need the function that can return a "representitive module instance" for all the module which creates from the
+    ///       same module binary. <br/>
+    ///       In this function, we need assume that all the module instances under the given path are created from the same module binary.
+    ///       If this rule breaks, it will return an error code
     /// @return status code
     pub mod_cntl_prefix: ::std::option::Option<
         unsafe extern "C" fn(path: *const ::std::os::raw::c_char, result: *mut u8)
@@ -1396,10 +1396,10 @@ pub struct runtime_api_address_table_t {
     pub version: ::std::option::Option<unsafe extern "C" fn() -> *const ::std::os::raw::c_char>,
     /// @brief The async task control function
     /// @note This function is the only plumber API can be called from the async processing thread.
-    /// And we actually have the limit for this function is we should call this function with task context,
-    /// otherwise we should provide the task_handle (The example for this case is the ASYNC_CNTL_OPCODE_NOTIFY_WAIT,
-    /// which we may not call the function from the thread working on the async task. In this case, we just extract
-    /// the async context from the handle
+    ///       And we actually have the limit for this function is we should call this function with task context,
+    ///       otherwise we should provide the task_handle (The example for this case is the ASYNC_CNTL_OPCODE_NOTIFY_WAIT,
+    ///       which we may not call the function from the thread working on the async task. In this case, we just extract
+    ///       the async context from the handle
     /// @todo implement this
     /// @return status code
     pub async_cntl: ::std::option::Option<
@@ -1595,27 +1595,27 @@ fn bindgen_test_layout_runtime_api_address_table_t() {
 }
 /// @brief the data structure used to define a servlet
 /// @note  Instead of checking if the callback fuction is defined to determine if this is an async task. We relies on the
-/// return value of the init function. This is because for the language support servlet, we can not tell if it's a
-/// async servlet or not during the compile time. The only way for us to kown this is get the servlet fully initialized<br/>
-/// If the init function returns RUNTIME_API_INIT_RESULT_SYNC and exec function has been defined, all the async_* function
-/// won't be used any mopre. This case indicates we have a sync servlet. <br/>
-/// If the init function returns RUNTIME_API_INIT_RESULT_ASYNC, asyc_init must be defined
-/// This case indicates we have an async servlet <br/>
-/// The async_exec and async_cleanup function is not necessarily to be defined. Because for some case, we
-/// actually can have a task initialize a async IO form the async_init and set the async task mode to the wait mode
-/// Then we can have an undefined async_exec function, which means we don't need to do anything other than initializing
-/// the IO. <br/>
-/// If the exec function is not defined and init returns RUNTIME_API_INIT_RESULT_SYNC, this indicates we have an sync servlet
-/// with an empty exec function. This is useful when we only have a shadow output for the servlet, for example, dataflow/dup.
+///        return value of the init function. This is because for the language support servlet, we can not tell if it's a
+///        async servlet or not during the compile time. The only way for us to kown this is get the servlet fully initialized<br/>
+///        If the init function returns RUNTIME_API_INIT_RESULT_SYNC and exec function has been defined, all the async_* function
+///        won't be used any mopre. This case indicates we have a sync servlet. <br/>
+///        If the init function returns RUNTIME_API_INIT_RESULT_ASYNC, asyc_init must be defined
+///        This case indicates we have an async servlet <br/>
+///        The async_exec and async_cleanup function is not necessarily to be defined. Because for some case, we
+///        actually can have a task initialize a async IO form the async_init and set the async task mode to the wait mode
+///        Then we can have an undefined async_exec function, which means we don't need to do anything other than initializing
+///        the IO. <br/>
+///        If the exec function is not defined and init returns RUNTIME_API_INIT_RESULT_SYNC, this indicates we have an sync servlet
+///        with an empty exec function. This is useful when we only have a shadow output for the servlet, for example, dataflow/dup.
 /// @todo  When a servlet is loaded we should
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct runtime_api_servlet_def_t {
-    /// < the size of the additional data for this servlet
+    ///< the size of the additional data for this servlet
     pub size: usize,
-    /// < the description of this servlet
+    ///< the description of this servlet
     pub desc: *const ::std::os::raw::c_char,
-    /// < the required API version for this servlet, currently is 0
+    ///< the required API version for this servlet, currently is 0
     pub version: u32,
     /// @brief The function that will be called by the initialize task
     /// @param argc the argument count
@@ -1641,17 +1641,17 @@ pub struct runtime_api_servlet_def_t {
     pub unload: ::std::option::Option<
         unsafe extern "C" fn(data: *mut ::std::os::raw::c_void) -> ::std::os::raw::c_int,
     >,
-    /// < The async buffer size
+    ///< The async buffer size
     pub async_buf_size: u32,
     /// @brief The initialization stage of the async task
     /// @param task This is the handle we used to pass to the async_cntl funciton
     /// @param data The servlet local context
     /// @param async_buf The buffer we are going to carry to the async_exec
     /// @note For the async_exec function, we don't allow the servlet access any servlet context,
-    /// because this breaks the thread convention of the worker thread.
-    /// This make the async task has to copy all the required data to the async buf, which is
-    /// complete different memory, and this memory will be the only data the async_exec function
-    /// can access
+    ///       because this breaks the thread convention of the worker thread.
+    ///       This make the async task has to copy all the required data to the async buf, which is
+    ///       complete different memory, and this memory will be the only data the async_exec function
+    ///       can access
     /// @return status code
     pub async_setup: ::std::option::Option<
         unsafe extern "C" fn(
@@ -1661,7 +1661,7 @@ pub struct runtime_api_servlet_def_t {
         ) -> ::std::os::raw::c_int,
     >,
     /// @brief Execute the initialized async task, the only input of the async buf is the async buf
-    /// In this function, all the API calls are disallowed.
+    ///        In this function, all the API calls are disallowed.
     /// @param async_buf The async data buffer
     /// @param task This is the handle we used to pass to the async_cntl funciton
     /// @return status code

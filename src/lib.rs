@@ -32,7 +32,7 @@
 //!     type AsyncServletType = Unimplemented;
 //!     fn get(_args : &[&str]) -> BootstrapResult<Self>
 //!     {
-//!         return Self::sync(Servlet{});
+//!         return Self::make_sync(Servlet{});
 //!     }
 //! }
 //! export_bootstrap!(Bootstrapper);
@@ -54,12 +54,12 @@ pub mod protocol;
 /**
  * The type for the Plumber API address table
  **/
-pub type ApiAddressTable        = ::plumber_api::runtime_api_address_table_t;
+pub type ApiAddressTable        = crate::plumber_api::runtime_api_address_table_t;
 
 /**
  * The function pointer for the variadic helper function
  **/
-pub type VariadicWrapperFunc    = ::va_list_helper::rust_va_list_wrapper_func_t;
+pub type VariadicWrapperFunc    = crate::va_list_helper::rust_va_list_wrapper_func_t;
 
 
 #[allow(dead_code)]
@@ -114,64 +114,64 @@ macro_rules! export_bootstrap {
         #[allow(dead_code)]
         #[no_mangle]
         pub extern "C" fn _rs_invoke_bootstrap(argc: u32, 
-                                               argv: *const *const ::std::os::raw::c_char,
-                                               tm_ptr: *mut ::std::os::raw::c_void,
-                                               address_table : *const ::plumber_rs::ApiAddressTable, 
-                                               va_helper : ::plumber_rs::VariadicWrapperFunc) -> *mut ::std::os::raw::c_void 
+                                               argv: *const *const crate::std::os::raw::c_char,
+                                               tm_ptr: *mut crate::std::os::raw::c_void,
+                                               address_table : *const crate::plumber_rs::ApiAddressTable, 
+                                               va_helper : crate::plumber_rs::VariadicWrapperFunc) -> *mut crate::std::os::raw::c_void 
         {
-            ::plumber_rs::assign_address_table(address_table, va_helper);
-            return unsafe{ ::plumber_rs::rust_servlet::call_bootstrap_obj::<$bs>(argc, argv, tm_ptr) };
+            crate::plumber_rs::assign_address_table(address_table, va_helper);
+            return unsafe{ crate::plumber_rs::rust_servlet::call_bootstrap_obj::<$bs>(argc, argv, tm_ptr) };
         }
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_init(obj_ptr    : *mut ::std::os::raw::c_void, 
+        pub extern "C" fn _rs_invoke_init(obj_ptr    : *mut crate::std::os::raw::c_void, 
                                           argc       : u32, 
-                                          argv       : *const *const ::std::os::raw::c_char) -> i32 
+                                          argv       : *const *const crate::std::os::raw::c_char) -> i32 
         {
-            ::plumber_rs::rust_servlet::invoke_servlet_init::<$bs>(obj_ptr, argc, argv)
+            crate::plumber_rs::rust_servlet::invoke_servlet_init::<$bs>(obj_ptr, argc, argv)
         }
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_exec(obj_ptr   : *mut ::std::os::raw::c_void, 
-                                          type_inst : *mut ::std::os::raw::c_void) -> i32 
+        pub extern "C" fn _rs_invoke_exec(obj_ptr   : *mut crate::std::os::raw::c_void, 
+                                          type_inst : *mut crate::std::os::raw::c_void) -> i32 
         {
-            ::plumber_rs::rust_servlet::invoke_servlet_sync_exec::<$bs>(obj_ptr, type_inst)
+            crate::plumber_rs::rust_servlet::invoke_servlet_sync_exec::<$bs>(obj_ptr, type_inst)
         }
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_cleanup(obj_ptr : *mut ::std::os::raw::c_void) -> i32 
+        pub extern "C" fn _rs_invoke_cleanup(obj_ptr : *mut crate::std::os::raw::c_void) -> i32 
         {
-            ::plumber_rs::rust_servlet::invoke_servlet_cleanup::<$bs>(obj_ptr)
+            crate::plumber_rs::rust_servlet::invoke_servlet_cleanup::<$bs>(obj_ptr)
         }
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_async_init(obj_ptr  : *mut ::std::os::raw::c_void, 
-                                                handle   : *mut ::std::os::raw::c_void,
-                                                type_inst: *mut ::std::os::raw::c_void) -> *mut ::std::os::raw::c_void
+        pub extern "C" fn _rs_invoke_async_init(obj_ptr  : *mut crate::std::os::raw::c_void, 
+                                                handle   : *mut crate::std::os::raw::c_void,
+                                                type_inst: *mut crate::std::os::raw::c_void) -> *mut crate::std::os::raw::c_void
         {
-            ::plumber_rs::rust_servlet::invoke_servlet_async_init::<$bs>(obj_ptr, handle, type_inst)
+            crate::plumber_rs::rust_servlet::invoke_servlet_async_init::<$bs>(obj_ptr, handle, type_inst)
         }
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_async_exec(handle : *mut ::std::os::raw::c_void, 
-                                                task : *mut ::std::os::raw::c_void) -> i32
+        pub extern "C" fn _rs_invoke_async_exec(handle : *mut crate::std::os::raw::c_void, 
+                                                task : *mut crate::std::os::raw::c_void) -> i32
         {
-            ::plumber_rs::rust_servlet::invoke_servlet_async_exec::<$bs>(handle, task)
+            crate::plumber_rs::rust_servlet::invoke_servlet_async_exec::<$bs>(handle, task)
         }
 
         #[allow(dead_code)]
         #[no_mangle]
-        pub extern "C" fn _rs_invoke_async_cleanup(obj_ptr   : *mut ::std::os::raw::c_void, 
-                                                   handle    : *mut ::std::os::raw::c_void, 
-                                                   task      : *mut ::std::os::raw::c_void,
-                                                   type_inst : *mut ::std::os::raw::c_void) -> i32
+        pub extern "C" fn _rs_invoke_async_cleanup(obj_ptr   : *mut crate::std::os::raw::c_void, 
+                                                   handle    : *mut crate::std::os::raw::c_void, 
+                                                   task      : *mut crate::std::os::raw::c_void,
+                                                   type_inst : *mut crate::std::os::raw::c_void) -> i32
         {
-            ::plumber_rs::rust_servlet::invoke_servlet_async_cleanup::<$bs>(obj_ptr, handle, task, type_inst)
+            crate::plumber_rs::rust_servlet::invoke_servlet_async_cleanup::<$bs>(obj_ptr, handle, task, type_inst)
         }
     }
 }

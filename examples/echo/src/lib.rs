@@ -71,7 +71,7 @@ impl Bootstrap for BootstrapType {
         {
             if let Some(output) = Pipe::define("output", PIPE_OUTPUT, None)
             {
-                return Self::sync(Servlet{
+                return Self::make_sync(Servlet{
                     input : input,
                     output: output
                 });
