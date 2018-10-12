@@ -540,9 +540,9 @@ impl DataModel<Untyped> for Untyped {
 macro_rules! protodef {
     ($(protodef $proto_name:ident { $([$pipe:ident.$($field:tt)*]:$type:ty => $model_name:ident;)* })*) => {
         mod plumber_protocol {
-            use ::plumber_rs::protocol::{Primitive, TypeModelObject, ProtocolModel};
-            use ::plumber_rs::pipe::PipeDescriptor;
-            use ::std::collections::HashMap;
+            use crate::plumber_rs::protocol::{Primitive, TypeModelObject, ProtocolModel};
+            use crate::plumber_rs::pipe::PipeDescriptor;
+            use std::collections::HashMap;
             $(
             pub struct $proto_name {
                 type_model : TypeModelObject,
@@ -580,7 +580,7 @@ macro_rules! protodef {
             )*
         }
         mod plumber_protocol_accessor {
-            use ::plumber_rs::protocol::{DataModel, TypeInstanceObject, PrimitiveTypeTag, Primitive};
+            use crate::plumber_rs::protocol::{DataModel, TypeInstanceObject, PrimitiveTypeTag, Primitive};
             use std::rc::Rc;
             pub struct FieldAccessor<'a, T: PrimitiveTypeTag<T> + Default + 'a> {
                 target : &'a Primitive<T>,
@@ -601,7 +601,7 @@ macro_rules! protodef {
 
             $(
             pub struct $proto_name {
-                model : Rc<::plumber_protocol::$proto_name>,
+                model : Rc<crate::plumber_protocol::$proto_name>,
                 inst  : TypeInstanceObject
             }
 
@@ -618,8 +618,8 @@ macro_rules! protodef {
                 )*
             }
 
-            impl DataModel<::plumber_protocol::$proto_name> for $proto_name {
-                fn new_data_model(model : Rc<::plumber_protocol::$proto_name>, type_inst:TypeInstanceObject) -> $proto_name
+            impl DataModel<crate::plumber_protocol::$proto_name> for $proto_name {
+                fn new_data_model(model : Rc<crate::plumber_protocol::$proto_name>, type_inst:TypeInstanceObject) -> $proto_name
                 {
                     return $proto_name{
                         model : model,
@@ -640,8 +640,8 @@ macro_rules! protodef {
 #[macro_export]
 macro_rules! use_protocol {
     ($name:ident) => {
-        type ProtocolType   = ::plumber_protocol::$name;
-        type DataModelType  = ::plumber_protocol_accessor::$name;
+        type ProtocolType   = crate::plumber_protocol::$name;
+        type DataModelType  = crate::plumber_protocol_accessor::$name;
     }
 }
 
@@ -653,8 +653,8 @@ macro_rules! use_protocol {
 #[macro_export]
 macro_rules! no_protocol {
     () => {
-        type ProtocolType = ::plumber_rs::protocol::Untyped;
-        type DataModelType = ::plumber_rs::protocol::Untyped;
+        type ProtocolType = crate::plumber_rs::protocol::Untyped;
+        type DataModelType = crate::plumber_rs::protocol::Untyped;
     }
 }
 
@@ -677,11 +677,11 @@ macro_rules! no_protocol {
 macro_rules! init_protocol {
     ($what:ident {$($actual:expr => $model:ident),*}) => {
         {
-            let mut pipe_map = ::std::collections::HashMap::<String, ::plumber_rs::pipe::PipeDescriptor>::new();
+            let mut pipe_map = crate::std::collections::HashMap::<String, crate::plumber_rs::pipe::PipeDescriptor>::new();
             $(pipe_map.insert(stringify!($model).to_string(), $actual.as_descriptor());)*
             if !$what.init_model(pipe_map)
             {
-                return ::plumber_rs::servlet::fail();
+                return crate::plumber_rs::servlet::fail();
             }
         }
     }
